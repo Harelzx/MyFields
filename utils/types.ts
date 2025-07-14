@@ -81,6 +81,29 @@ export interface Friend {
   lastActive?: string;
 }
 
+// ===== Game Types =====
+export interface Game {
+  id: string;
+  title?: string;
+  sport: string;
+  fieldId: string;
+  fieldName: string;
+  fieldImageUrl?: string;
+  organizerId: string;
+  organizerName: string;
+  date: string;
+  time: string;
+  duration: number;
+  maxPlayers: number;
+  currentPlayers: number;
+  pricePerPlayer: number;
+  description?: string;
+  skill_level: 'beginner' | 'intermediate' | 'advanced' | 'any';
+  status: 'open' | 'full' | 'active' | 'completed' | 'cancelled';
+  createdAt: string;
+  participants: string[];
+}
+
 // ===== Wallet Types =====
 export interface WalletTransaction {
   id: string;

@@ -20,15 +20,17 @@ export const texts = {
     signInWithApple: 'התחבר עם Apple',
     createAccount: 'יצירת חשבון',
     alreadyHaveAccount: 'כבר יש לך חשבון?',
-    dontHaveAccount: 'אין לך חשבון?'
+    dontHaveAccount: 'אין לך חשבון?',
+    logout: 'התנתקות'
   },
   
   // Navigation
   tabs: {
     home: 'בית',
-    bookings: 'ההזמנות שלי',
+    bookings: 'הזמנות',
     friends: 'חברים',
-    wallet: 'ארנק'
+    wallet: 'ארנק',
+    menu: 'תפריט'
   },
   
   // Home Screen
@@ -38,7 +40,7 @@ export const texts = {
     goodAfternoon: 'אחר הצהריים טובים',
     goodEvening: 'ערב טוב',
     bookField: 'הזמן מגרש',
-    myBookings: 'ההזמנות שלי',
+    myBookings: 'הזמנות',
     friends: 'חברים',
     wallet: 'ארנק',
     recentBookings: 'הזמנות אחרונות',
@@ -189,6 +191,40 @@ export const texts = {
     completeProfile: 'השלם פרופיל'
   },
   
+  // User Profile
+  userProfile: {
+    title: 'פרופיל אישי',
+    personalInfo: 'מידע אישי',
+    accountSettings: 'הגדרות חשבון',
+    preferences: 'העדפות',
+    privacy: 'פרטיות',
+    editProfile: 'ערוך פרופיל',
+    changePassword: 'שנה סיסמה',
+    notifications: 'התראות',
+    language: 'שפה',
+    deleteAccount: 'מחק חשבון'
+  },
+
+  // Settings
+  settings: {
+    title: 'הגדרות',
+    general: 'כללי',
+    appearance: 'מראה',
+    notifications: 'התראות',
+    privacy: 'פרטיות',
+    about: 'אודות',
+    darkMode: 'מצב לילה',
+    lightMode: 'מצב יום',
+    systemTheme: 'עקוב אחר המערכת',
+    pushNotifications: 'התראות דחיפה',
+    emailNotifications: 'התראות אימייל',
+    smsNotifications: 'התראות SMS',
+    version: 'גרסה',
+    termsOfService: 'תנאי השירות',
+    privacyPolicy: 'מדיניות פרטיות',
+    logout: 'התנתקות'
+  },
+
   // Error Messages
   errors: {
     networkError: 'שגיאת רשת',

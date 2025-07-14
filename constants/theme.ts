@@ -1,5 +1,7 @@
-// Enhanced Design System Theme
-export const designTokens = {
+// Enhanced Design System Theme with Dark Mode Support
+export type ThemeMode = 'light' | 'dark';
+
+export const lightTheme = {
   // Spacing System (4px grid)
   spacing: {
     xxs: 2,
@@ -158,7 +160,7 @@ export const designTokens = {
       900: '#1E3A8A',
     },
 
-    // Wolt Text Colors
+    // Wolt Text Colors (Light Mode)
     text: {
       primary: '#111827',    // text-main (Headings and primary text)
       secondary: '#374151',
@@ -166,24 +168,29 @@ export const designTokens = {
       disabled: '#9CA3AF',  // Navigation inactive
       inverse: '#FFFFFF',
       accent: '#2A66F9',    // Wolt blue
+      onSurface: '#111827',
+      onBackground: '#111827',
     },
 
-    // Wolt Background Colors
+    // Wolt Background Colors (Light Mode)
     background: {
       primary: '#FFFFFF',    // App page background
-      secondary: '#FFFFFF',  // Same as primary for consistency
+      secondary: '#F8FAFC',  // Section backgrounds
       tertiary: '#FFFFFF',   // Header background
       elevated: '#FFFFFF',   // Pure white cards
       card: '#F9FAFB',      // Card background
+      surface: '#FFFFFF',   // Surface backgrounds
       overlay: 'rgba(0, 0, 0, 0.5)',
+      modal: 'rgba(0, 0, 0, 0.6)',
     },
 
-    // Wolt Border Colors
+    // Wolt Border Colors (Light Mode)
     border: {
       light: '#E5E7EB',     // Light gray borders
       medium: '#D1D5DB',
       heavy: '#9CA3AF',
       accent: '#2A66F9',    // Wolt blue
+      subtle: '#F1F5F9',
     },
   },
 
@@ -260,7 +267,155 @@ export const designTokens = {
   },
 };
 
-// Helper functions for consistent usage
+// Dark Theme Configuration
+export const darkTheme = {
+  ...lightTheme,
+  colors: {
+    ...lightTheme.colors,
+    
+    // Dark Mode Text Colors
+    text: {
+      primary: '#F9FAFB',    // Light text on dark background
+      secondary: '#E5E7EB',
+      tertiary: '#9CA3AF',   // Muted text in dark mode
+      disabled: '#6B7280',   // Disabled text
+      inverse: '#111827',    // Dark text (for light surfaces)
+      accent: '#60A5FA',     // Lighter blue for dark mode
+      onSurface: '#F9FAFB',
+      onBackground: '#F9FAFB',
+    },
+
+    // Dark Mode Background Colors
+    background: {
+      primary: '#111827',    // Dark primary background
+      secondary: '#1F2937',  // Section backgrounds
+      tertiary: '#111827',   // Header background
+      elevated: '#1F2937',   // Elevated surfaces
+      card: '#1F2937',       // Card backgrounds
+      surface: '#374151',    // Surface backgrounds
+      overlay: 'rgba(0, 0, 0, 0.7)',
+      modal: 'rgba(0, 0, 0, 0.8)',
+    },
+
+    // Dark Mode Border Colors
+    border: {
+      light: '#374151',      // Light borders in dark mode
+      medium: '#4B5563',
+      heavy: '#6B7280',
+      accent: '#60A5FA',     // Lighter blue for dark mode
+      subtle: '#1F2937',
+    },
+  },
+};
+
+// Theme Management
+export const createTheme = (mode: ThemeMode) => {
+  return mode === 'dark' ? darkTheme : lightTheme;
+};
+
+// Default theme
+export const designTokens = lightTheme;
+
+// Additional UI-specific tokens for the new design
+export const uiTokens = {
+  // Navigation
+  navigation: {
+    height: 80,
+    iconSize: 24,
+    labelSize: 12,
+    activeIndicatorHeight: 3,
+  },
+  
+  // User Profile Dropdown
+  dropdown: {
+    width: 200,
+    itemHeight: 44,
+    borderRadius: 12,
+    maxHeight: 180,
+  },
+  
+  // Section Cards (Nearby Fields, Join Games)
+  sectionCard: {
+    height: 180,
+    borderRadius: 16,
+    itemWidth: 140,
+    itemHeight: 120,
+    itemSpacing: 12,
+  },
+  
+  // Menu Grid
+  menuGrid: {
+    columns: 2,
+    itemHeight: 100,
+    itemSpacing: 16,
+    borderRadius: 16,
+  },
+  
+  // Touch Targets (Accessibility)
+  touchTarget: {
+    minimum: 44,
+    recommended: 48,
+  },
+  
+  // Animations
+  transitions: {
+    quick: 150,
+    normal: 250,
+    slow: 350,
+    spring: {
+      damping: 15,
+      stiffness: 150,
+    },
+  },
+};
+
+// Hebrew RTL-specific styling helpers
+export const rtlHelpers = {
+  // Text alignment for RTL
+  textAlign: 'right' as const,
+  
+  // Flex direction for RTL rows
+  flexDirection: 'row-reverse' as const,
+  
+  // Margin helpers for RTL
+  marginRight: (value: number) => ({ marginLeft: value }),
+  marginLeft: (value: number) => ({ marginRight: value }),
+  
+  // Padding helpers for RTL
+  paddingRight: (value: number) => ({ paddingLeft: value }),
+  paddingLeft: (value: number) => ({ paddingRight: value }),
+  
+  // Positioning helpers for RTL
+  right: (value: number) => ({ left: value }),
+  left: (value: number) => ({ right: value }),
+};
+
+// Color accessibility helpers
+export const colorHelpers = {
+  // Get appropriate text color for backgrounds
+  getTextColor: (mode: ThemeMode, variant: 'primary' | 'secondary' | 'tertiary' = 'primary') => {
+    const theme = createTheme(mode);
+    return theme.colors.text[variant];
+  },
+  
+  // Get appropriate background color
+  getBackgroundColor: (mode: ThemeMode, variant: 'primary' | 'secondary' | 'card' | 'surface' = 'primary') => {
+    const theme = createTheme(mode);
+    return theme.colors.background[variant];
+  },
+  
+  // Get border color
+  getBorderColor: (mode: ThemeMode, variant: 'light' | 'medium' | 'heavy' | 'accent' = 'light') => {
+    const theme = createTheme(mode);
+    return theme.colors.border[variant];
+  },
+};
+
+// Export all themes for easy access
+export const themes = {
+  light: lightTheme,
+  dark: darkTheme,
+};
 export const getSpacing = (size: keyof typeof designTokens.spacing) => 
   designTokens.spacing[size];
 

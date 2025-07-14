@@ -8,6 +8,16 @@
     "userInterfaceStyle": "light",
     "newArchEnabled": true,
     "supportsRTL": true,
+    "plugins": [
+      [
+        "expo-build-properties",
+        {
+          "ios": {
+            "prefersHomeIndicatorAutoHidden": true
+          }
+        }
+      ]
+    ],
     "splash": {
       "image": "./assets/splash-icon.png",
       "resizeMode": "contain",
@@ -16,7 +26,8 @@
     "ios": {
       "supportsTablet": true,
       "supportsRTL": true,
-      "bundleIdentifier": "com.anonymous.MyFields"
+      "bundleIdentifier": "com.anonymous.MyFields",
+      "homeIndicatorAutoHidden": true
     },
     "android": {
       "adaptiveIcon": {
@@ -25,7 +36,11 @@
       },
       "edgeToEdgeEnabled": true,
       "supportsRTL": true,
-      "package": "com.anonymous.MyFields"
+      "package": "com.anonymous.MyFields",
+      "navigationBar": {
+        "visible": false,
+        "backgroundColor": "transparent"
+      }
     },
     "web": {
       "favicon": "./assets/favicon.png"

@@ -6,20 +6,21 @@ interface RTLTextProps extends TextProps {
 }
 
 export const RTLText: React.FC<RTLTextProps> = ({ style, center = false, ...props }) => {
-  // Handle centered text vs right-aligned text
+  // CONFIRMED: When I18nManager.isRTL = TRUE with doLeftAndRightSwapInRTL = TRUE:
+  // - textAlign: 'left' → Shows Hebrew on visual RIGHT side ✅
+  // - textAlign: 'right' → Shows Hebrew on visual LEFT side ❌
+  
   const rtlStyle = center 
     ? { textAlign: 'center' as const }
-    : I18nManager.isRTL 
-      ? { textAlign: 'left' as const } 
-      : { 
-          writingDirection: 'rtl' as const, 
-          textAlign: 'right' as const 
-        };
+    : { 
+        textAlign: 'left' as const,      // In RTL mode, 'left' = visual RIGHT for Hebrew
+        // Remove writingDirection as it's not helping
+      };
 
   return (
     <Text
       {...props}
-      style={[style, rtlStyle]}
+      style={[rtlStyle, style]} // Apply rtlStyle first, then allow style to override
     />
   );
 };

@@ -5,7 +5,8 @@ import {
   MOCK_FRIENDS, 
   MOCK_WALLET_TRANSACTIONS,
   MOCK_SPORTS,
-  MOCK_CITIES
+  MOCK_CITIES,
+  MOCK_GAMES
 } from '../constants/mockData';
 import { 
   User, 
@@ -14,6 +15,7 @@ import {
   Friend, 
   WalletTransaction, 
   Sport,
+  Game,
   SearchFilters,
   ApiResponse 
 } from '../utils/types';
@@ -243,6 +245,117 @@ export const addMoneyToWallet = async (userId: string, amount: number): Promise<
     success: true,
     data: true,
     message: `${amount} ₪ נוספו לארנק בהצלחה`
+  };
+};
+
+// ===== Games API =====
+export const searchGames = async (filters: SearchFilters = {}): Promise<ApiResponse<Game[]>> => {
+  await delay(600);
+  
+  let filteredGames = [...MOCK_GAMES];
+  
+  // Filter by sport type
+  if (filters.sportType) {
+    filteredGames = filteredGames.filter(game => game.sport === filters.sportType);
+  }
+  
+  // Filter by city (based on field location)
+  if (filters.city) {
+    const cityFields = MOCK_FIELDS.filter(field => field.city === filters.city);
+    const cityFieldIds = cityFields.map(field => field.id);
+    filteredGames = filteredGames.filter(game => cityFieldIds.includes(game.fieldId));
+  }
+  
+  // Filter by date
+  if (filters.date) {
+    filteredGames = filteredGames.filter(game => game.date === filters.date);
+  }
+  
+  // Only show open games
+  filteredGames = filteredGames.filter(game => game.status === 'open');
+  
+  return {
+    success: true,
+    data: filteredGames,
+    message: `נמצאו ${filteredGames.length} משחקים זמינים`
+  };
+};
+
+export const fetchGameById = async (gameId: string): Promise<ApiResponse<Game>> => {
+  await delay(400);
+  
+  const game = MOCK_GAMES.find(g => g.id === gameId);
+  
+  if (game) {
+    return {
+      success: true,
+      data: game,
+      message: 'פרטי המשחק נטענו בהצלחה'
+    };
+  }
+  
+  return {
+    success: false,
+    error: 'משחק לא נמצא'
+  };
+};
+
+export const joinGame = async (gameId: string, userId: string): Promise<ApiResponse<boolean>> => {
+  await delay(800);
+  
+  const game = MOCK_GAMES.find(g => g.id === gameId);
+  
+  if (!game) {
+    return {
+      success: false,
+      error: 'משחק לא נמצא'
+    };
+  }
+  
+  if (game.currentPlayers >= game.maxPlayers) {
+    return {
+      success: false,
+      error: 'המשחק מלא'
+    };
+  }
+  
+  if (game.participants.includes(userId)) {
+    return {
+      success: false,
+      error: 'כבר הצטרפת למשחק זה'
+    };
+  }
+  
+  return {
+    success: true,
+    data: true,
+    message: 'הצטרפת למשחק בהצלחה!'
+  };
+};
+
+export const leaveGame = async (gameId: string, userId: string): Promise<ApiResponse<boolean>> => {
+  await delay(600);
+  
+  const game = MOCK_GAMES.find(g => g.id === gameId);
+  
+  if (!game) {
+    return {
+      success: false,
+      error: 'משחק לא נמצא'
+    };
+  }
+  
+  if (!game.participants.includes(userId)) {
+    return {
+      success: false,
+      error: 'לא הצטרפת למשחק זה'
+    };
+  }
+  
+  return {
+    success: true,
+    data: true,
+    message: 'יצאת מהמשחק בהצלחה'
   };
 };
 
