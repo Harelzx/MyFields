@@ -4,36 +4,20 @@ import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 import { I18nManager } from 'react-native';
 import { GluestackUIProvider } from '@gluestack-ui/themed';
-import { gluestackConfig } from './config/gluestack-config';
+import { gluestackConfig } from '@config/gluestack-config';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
-import { ThemeProvider } from './contexts/ThemeContext';
+import { ThemeProvider } from '@contexts/ThemeContext';
+import { QueryProvider } from '@providers/QueryProvider';
+import { bootstrapRTL } from '@utils/bootstrap';
 
 // Import screens
-import WelcomeScreen from './app/auth/WelcomeScreen';
-import LoginScreen from './app/auth/LoginScreen';
-import SignupScreen from './app/auth/SignupScreen';
-import MainTabs from './components/navigation/MainTabs';
+import WelcomeScreen from '@screens/WelcomeScreen';
+import LoginScreen from '@screens/LoginScreen';
+import SignupScreen from '@screens/SignupScreen';
+import MainTabs from '@navigation/MainTabs';
 
 // Initialize RTL for Hebrew
-try {
-  I18nManager.allowRTL(true);
-  
-  // Check if we need to force RTL
-  if (!I18nManager.isRTL) {
-    I18nManager.forceRTL(true);
-    console.warn('⚠️ RTL configuration changed - restart required');
-  } else {
-    console.log('✅ RTL is properly enabled');
-  }
-  
-  console.log('RTL Status:', {
-    isRTL: I18nManager.isRTL,
-    allowRTL: true,
-    platform: 'expo'
-  });
-} catch (error) {
-  console.error('RTL initialization error:', error);
-}
+bootstrapRTL();
 
 const Stack = createStackNavigator();
 
@@ -41,8 +25,9 @@ export default function App() {
   return (
     <SafeAreaProvider>
       <ThemeProvider>
-        <GluestackUIProvider config={gluestackConfig}>
-          <NavigationContainer>
+        <QueryProvider>
+          <GluestackUIProvider config={gluestackConfig}>
+            <NavigationContainer>
             <Stack.Navigator 
               screenOptions={{ 
                 headerShown: false,
@@ -72,8 +57,9 @@ export default function App() {
               <Stack.Screen name="Signup" component={SignupScreen} />
               <Stack.Screen name="Main" component={MainTabs} />
             </Stack.Navigator>
-          </NavigationContainer>
-        </GluestackUIProvider>
+            </NavigationContainer>
+          </GluestackUIProvider>
+        </QueryProvider>
       </ThemeProvider>
     </SafeAreaProvider>
   );
