@@ -614,19 +614,19 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
       <SafeAreaView flex={1} bg="$appBackground" $dark={{bg: "$backgroundDark900"}}>
 
 
-        {/* Profile Dropdown Menu - Outside scroll to prevent clipping */}
+        {/* Profile Dropdown Menu - Positioned relative to header */}
         {showProfileDropdown && (
-          <Animated.View
-            style={[
-              {
-                position: 'absolute',
-                top: 80,
-                right: 24,
-                zIndex: 1000,
-              },
-              dropdownAnimatedStyle,
-            ]}
-          >
+          <Box position="relative" zIndex={1000}>
+            <Animated.View
+              style={[
+                {
+                  position: 'absolute',
+                  top: -10,
+                  right: 24,
+                },
+                dropdownAnimatedStyle,
+              ]}
+            >
               <Box
                 bg="$backgroundLight0"
                 $dark={{bg: "$backgroundDark800"}}
@@ -642,73 +642,74 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
                 minWidth={180}
                 overflow="hidden"
               >
-              {/* Profile Option */}
-              <Pressable
-                onPress={handleProfileMenuPress}
-                $pressed={{ bg: '$backgroundLight100' }}
-                px="$4"
-                py="$3"
-                borderBottomWidth="$1"
-                borderBottomColor="$borderLight100"
-              >
-                <HStack space="md" alignItems="center">
-                  <Ionicons name="person" size={16} color="#6B7280" />
-                  <Text
-                    fontSize="$md"
-                    fontWeight="$medium"
-                    color="$textLight900"
-                    $dark={{color: "$textDark50"}}
-                    textAlign="left"
-                  >
-                    פרופיל אישי
-                  </Text>
-                </HStack>
-              </Pressable>
+                {/* Profile Option */}
+                <Pressable
+                  onPress={handleProfileMenuPress}
+                  $pressed={{ bg: '$backgroundLight100' }}
+                  px="$4"
+                  py="$3"
+                  borderBottomWidth="$1"
+                  borderBottomColor="$borderLight100"
+                >
+                  <HStack space="md" alignItems="center">
+                    <Ionicons name="person" size={16} color="#6B7280" />
+                    <Text
+                      fontSize="$md"
+                      fontWeight="$medium"
+                      color="$textLight900"
+                      $dark={{color: "$textDark50"}}
+                      textAlign="left"
+                    >
+                      פרופיל אישי
+                    </Text>
+                  </HStack>
+                </Pressable>
 
-              {/* Settings Option */}
-              <Pressable
-                onPress={handleSettingsPress}
-                $pressed={{ bg: '$backgroundLight100' }}
-                px="$4"
-                py="$3"
-                borderBottomWidth="$1"
-                borderBottomColor="$borderLight100"
-              >
-                <HStack space="md" alignItems="center">
-                  <Ionicons name="settings" size={16} color="#6B7280" />
-                  <Text
-                    fontSize="$md"
-                    fontWeight="$medium"
-                    color="$textLight900"
-                    $dark={{color: "$textDark50"}}
-                    textAlign="left"
-                  >
-                    הגדרות
-                  </Text>
-                </HStack>
-              </Pressable>
+                {/* Settings Option */}
+                <Pressable
+                  onPress={handleSettingsPress}
+                  $pressed={{ bg: '$backgroundLight100' }}
+                  px="$4"
+                  py="$3"
+                  borderBottomWidth="$1"
+                  borderBottomColor="$borderLight100"
+                >
+                  <HStack space="md" alignItems="center">
+                    <Ionicons name="settings" size={16} color="#6B7280" />
+                    <Text
+                      fontSize="$md"
+                      fontWeight="$medium"
+                      color="$textLight900"
+                      $dark={{color: "$textDark50"}}
+                      textAlign="left"
+                    >
+                      הגדרות
+                    </Text>
+                  </HStack>
+                </Pressable>
 
-              {/* Logout Option */}
-              <Pressable
-                onPress={handleLogoutPress}
-                $pressed={{ bg: '$backgroundLight100' }}
-                px="$4"
-                py="$3"
-              >
-                <HStack space="md" alignItems="center">
-                  <Ionicons name="log-out" size={16} color="#EF4444" />
-                  <Text
-                    fontSize="$md"
-                    fontWeight="$medium"
-                    color="$error500"
-                    textAlign="left"
-                  >
-                    יציאה
-                  </Text>
-                </HStack>
-              </Pressable>
+                {/* Logout Option */}
+                <Pressable
+                  onPress={handleLogoutPress}
+                  $pressed={{ bg: '$backgroundLight100' }}
+                  px="$4"
+                  py="$3"
+                >
+                  <HStack space="md" alignItems="center">
+                    <Ionicons name="log-out" size={16} color="#EF4444" />
+                    <Text
+                      fontSize="$md"
+                      fontWeight="$medium"
+                      color="$error500"
+                      textAlign="left"
+                    >
+                      יציאה
+                    </Text>
+                  </HStack>
+                </Pressable>
               </Box>
-          </Animated.View>
+            </Animated.View>
+          </Box>
         )}
 
         <ScrollView
@@ -719,39 +720,49 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
           }
         >
           <VStack flex={1} space="xl">
-            {/* Beautiful Hero Welcome Section with Gradient and Organic Shapes */}
+            {/* Simplified Hero Section with Focus on Next Activity */}
             <Animated.View entering={FadeInDown.delay(100).duration(600)}>
-              <Box position="relative" overflow="hidden" bg="#667eea">
-                
-                {/* Simplified Decorative Elements */}
-                <Box position="absolute" top={-50} right={-50} width={200} height={200} borderRadius={100} bg="rgba(255,255,255,0.1)" />
-                <Box position="absolute" bottom={-60} left={-60} width={180} height={180} borderRadius={90} bg="rgba(255,255,255,0.08)" />
-                <Box position="absolute" top={100} right={150} width={80} height={80} borderRadius={40} bg="rgba(255,255,255,0.15)" />
-                <Box position="absolute" top={50} left={80} width={120} height={120} borderRadius={60} bg="rgba(255,255,255,0.06)" />
-                <Box position="absolute" bottom={80} right={100} width={60} height={60} borderRadius={30} bg="rgba(255,255,255,0.12)" />
-                
-                {/* Floating particles */}
-                <Box position="absolute" top={130} left={30} width={8} height={8} borderRadius={4} bg="rgba(255,255,255,0.3)" />
-                <Box position="absolute" top={200} right={40} width={6} height={6} borderRadius={3} bg="rgba(255,255,255,0.4)" />
-                <Box position="absolute" bottom={120} left={120} width={10} height={10} borderRadius={5} bg="rgba(255,255,255,0.25)" />
-                <Box position="absolute" top={160} right={200} width={4} height={4} borderRadius={2} bg="rgba(255,255,255,0.5)" />
-                
-                <Box px="$6" py="$6" position="relative">
-                  {/* Profile Section - Positioned at Top Right */}
+              <Box mx="$6" mt="$4">
+                {/* Header with Profile */}
+                <HStack justifyContent="space-between" alignItems="center" mb="$6">
+                  <VStack space="xs" alignItems="flex-start">
+                    <Text 
+                      fontSize="$sm"
+                      fontWeight="$medium"
+                      color="$textLight600"
+                      $dark={{color: "$textDark400"}}
+                      textAlign="left"
+                    >
+                      {new Date().getHours() < 12 ? 'בוקר טוב' : new Date().getHours() < 18 ? 'אחר הצהריים טובים' : 'ערב טוב'}
+                    </Text>
+                    <Heading 
+                      size="xl"
+                      fontWeight="$bold"
+                      color="$textLight900"
+                      $dark={{color: "$textDark50"}}
+                      textAlign="left"
+                    >
+                      {currentUser}
+                    </Heading>
+                  </VStack>
+                  
+                  {/* Profile Button */}
                   <Pressable
-                    position="absolute"
-                    top="$4"
-                    right="$6"
                     onPress={handleProfilePress}
-                    bg="rgba(255,255,255,0.15)" 
+                    bg="$backgroundLight0"
+                    $dark={{bg: "$backgroundDark800"}}
                     borderRadius="$full" 
-                    px="$3"
-                    py="$2"
+                    p="$2"
                     borderWidth={1}
-                    borderColor="rgba(255,255,255,0.25)"
-                    zIndex={1001}
+                    borderColor="$borderLight200"
+                    $dark={{borderColor: "$borderDark700"}}
+                    shadowColor="$shadowLight300"
+                    shadowOffset={{ width: 0, height: 2 }}
+                    shadowOpacity={0.1}
+                    shadowRadius={4}
+                    elevation={3}
                     $pressed={{
-                      bg: 'rgba(255,255,255,0.25)',
+                      bg: '$backgroundLight100',
                       transform: [{ scale: 0.98 }],
                     }}
                   >
@@ -759,8 +770,8 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
                       <Box
                         bg="$primary500"
                         borderRadius="$full"
-                        width={28}
-                        height={28}
+                        width={32}
+                        height={32}
                         alignItems="center"
                         justifyContent="center"
                       >
@@ -768,285 +779,622 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
                           {currentUser.charAt(0)}
                         </Text>
                       </Box>
-                      <Ionicons name="chevron-down" size={14} color="white" />
+                      <Box
+                        bg="$success500"
+                        borderRadius="$full"
+                        width={8}
+                        height={8}
+                        mr="$1"
+                      />
+                      <Ionicons 
+                        name="chevron-down" 
+                        size={16} 
+                        color={theme.colors.text.secondary} 
+                      />
                     </HStack>
                   </Pressable>
+                </HStack>
 
-
-                  {/* Content Section */}
-                  <VStack space="md" alignItems="flex-start" pt="$2">
-                    {/* Compact Typography */}
-                    <VStack space="xs" alignItems="flex-start">
-                      <Text 
-                        fontSize="$sm"
-                        fontWeight="$medium"
-                        color="rgba(255,255,255,0.8)"
-                        textAlign="left"
+                {/* Next Activity Hero Card - Updated with gradient */}
+                <Box
+                  borderRadius="$xl"
+                  p="$5"
+                  shadowColor="#1f2937"
+                  shadowOffset={{ width: 0, height: 8 }}
+                  shadowOpacity={0.15}
+                  shadowRadius={16}
+                  elevation={8}
+                  position="relative"
+                  overflow="hidden"
+                  style={{
+                    background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
+                  }}
+                  bg="#667eea" // Fallback for non-gradient support
+                >
+                  {/* Subtle background pattern */}
+                  <Box 
+                    position="absolute" 
+                    top={-20} 
+                    right={-20} 
+                    width={100} 
+                    height={100} 
+                    borderRadius={50} 
+                    bg="rgba(255,255,255,0.08)" 
+                  />
+                  
+                  <VStack space="md" position="relative">
+                    <HStack justifyContent="space-between" alignItems="center">
+                      <VStack space="xs" alignItems="flex-start">
+                        <Text fontSize="$sm" color="rgba(255,255,255,0.8)" fontWeight="$medium">
+                          המשחק הבא שלך
+                        </Text>
+                        <Heading size="lg" color="white" fontWeight="$bold">
+                          כדורגל • היום 18:00
+                        </Heading>
+                        <HStack space="xs" alignItems="center">
+                          <Ionicons name="location" size={16} color="rgba(255,255,255,0.8)" />
+                          <Text fontSize="$md" color="rgba(255,255,255,0.9)" fontWeight="$medium">
+                            מגרש הכוכבים
+                          </Text>
+                        </HStack>
+                      </VStack>
+                      
+                      <Box
+                        bg="rgba(255,255,255,0.15)"
+                        borderRadius="$full"
+                        p="$3"
+                        borderWidth={1}
+                        borderColor="rgba(255,255,255,0.2)"
                       >
-                        ✨ {new Date().getHours() < 12 ? 'בוקר טוב' : new Date().getHours() < 18 ? 'אחר הצהריים טובים' : 'ערב טוב'}
-                      </Text>
-                      <Heading 
-                        size="2xl"
-                        fontWeight="$bold"
-                        color="white"
-                        textAlign="left"
-                        shadowColor="rgba(0,0,0,0.3)"
-                        shadowOffset={{ width: 0, height: 2 }}
-                        shadowOpacity={0.3}
-                        shadowRadius={4}
-                      >
-                        {currentUser}
-                      </Heading>
-                    </VStack>
+                        <Ionicons name="football" size={28} color="white" />
+                      </Box>
+                    </HStack>
                     
-                    {/* Inspiring Catchphrase with Benefits */}
-                    <VStack alignItems="flex-start" space="xs">
-                      <Text 
-                        fontSize="$lg" 
-                        color="white"
-                        textAlign="left"
-                        fontWeight="$bold"
-                        shadowColor="rgba(0,0,0,0.3)"
-                        shadowOffset={{ width: 0, height: 1 }}
-                        shadowOpacity={0.3}
-                        shadowRadius={2}
+                    <HStack space="md" mt="$2">
+                      <Button
+                        variant="solid"
+                        size="sm"
+                        bg="white"
+                        borderRadius="$full"
+                        flex={1}
+                        $pressed={{
+                          bg: 'rgba(255,255,255,0.9)',
+                          transform: [{ scale: 0.98 }],
+                        }}
                       >
-                        🏆 זמן לנצח יחד!
-                      </Text>
-                      <Text 
-                        fontSize="$xs" 
-                        color="white"
-                        textAlign="left"
-                        fontWeight="$medium"
-                        opacity={0.9}
-                        shadowColor="rgba(0,0,0,0.2)"
-                        shadowOffset={{ width: 0, height: 1 }}
-                        shadowOpacity={0.2}
-                        shadowRadius={1}
-                        numberOfLines={1}
-                        adjustsFontSizeToFit={true}
+                        <HStack space="xs" alignItems="center">
+                          <Ionicons name="navigate" size={16} color="#667eea" />
+                          <ButtonText color="#667eea" fontWeight="$bold">
+                            ניווט
+                          </ButtonText>
+                        </HStack>
+                      </Button>
+                      
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        borderColor="rgba(255,255,255,0.3)"
+                        borderRadius="$full"
+                        flex={1}
+                        $pressed={{
+                          bg: 'rgba(255,255,255,0.1)',
+                          transform: [{ scale: 0.98 }],
+                        }}
                       >
-                        מצא חברים • הזמן מגרש • שחק ותיהנה
-                      </Text>
-                    </VStack>
+                        <HStack space="xs" alignItems="center">
+                          <Ionicons name="information-circle" size={16} color="white" />
+                          <ButtonText color="white" fontWeight="$bold">
+                            פרטים
+                          </ButtonText>
+                        </HStack>
+                      </Button>
+                    </HStack>
                   </VStack>
                 </Box>
               </Box>
             </Animated.View>
 
-            {/* Enhanced Stats Cards with Vibrant Design */}
+            {/* Quick Stats Overview */}
             <Animated.View entering={FadeInRight.delay(200).duration(600)}>
-              <VStack space="lg">
-                <HStack justifyContent="space-between" alignItems="center" px="$6">
-                  <Heading variant="section">
-                    הפעילות שלך
+              <VStack space="md" mx="$6">
+                <HStack justifyContent="space-between" alignItems="center">
+                  <Heading 
+                    size="lg"
+                    fontWeight="$bold"
+                    color="$textLight900"
+                    $dark={{color: "$textDark50"}}
+                  >
+                    סיכום השבוע
                   </Heading>
-                  <Button variant="outline" size="sm" borderColor="$primary500">
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    borderColor="$borderLight300"
+                    $dark={{borderColor: "$borderDark600"}}
+                    bg="$backgroundLight50"
+                    $dark={{bg: "$backgroundDark700"}}
+                  >
                     <HStack space="xs" alignItems="center">
-                      <Ionicons name="analytics" size={16} color="#3396ff" />
-                      <ButtonText color="$primary600" fontSize="$sm" fontWeight="$semibold">
-                        כל הנתונים
+                      <ButtonText 
+                        color="$textLight700" 
+                        $dark={{color: "$textDark300"}}
+                        fontSize="$sm" 
+                        fontWeight="$medium"
+                      >
+                        הצג הכל
                       </ButtonText>
-                    </HStack>
-                  </Button>
-                </HStack>
-                
-                <Divider mx="$6" bg="$borderLight300" opacity={0.6} />
-                
-                <ScrollView
-                  horizontal
-                  showsHorizontalScrollIndicator={false}
-                  contentContainerStyle={{
-                    paddingHorizontal: 24,
-                    gap: 20,
-                  }}
-                >
-                  <VibrantStatsCard
-                    title="משחקים השבוע"
-                    value="5"
-                    subtitle="3 השבוע הבא"
-                    iconName="calendar"
-                    color="#10b981"
-                    onPress={() => console.log('Games this week')}
-                  />
-                  <VibrantStatsCard
-                    title="מגרשים שמורים"
-                    value="2"
-                    subtitle="מחר ב-18:00"
-                    iconName="location"
-                    color="#3396ff"
-                    onPress={() => console.log('Reserved fields')}
-                  />
-                  <VibrantStatsCard
-                    title="חברים פעילים"
-                    value="18"
-                    subtitle="השבוע"
-                    iconName="people"
-                    color="#22c55e"
-                    onPress={() => console.log('Active friends')}
-                  />
-                  <VibrantStatsCard
-                    title="הוצאות חודש"
-                    value="₪580"
-                    subtitle="מתוך ₪800"
-                    iconName="wallet"
-                    color="#f59e0b"
-                    onPress={() => console.log('Monthly expenses')}
-                  />
-                </ScrollView>
-              </VStack>
-            </Animated.View>
-
-            {/* Personalized Recommendations Section */}
-            <Animated.View entering={FadeInRight.delay(300).duration(600)}>
-              <VStack space="lg">
-                <HStack justifyContent="space-between" alignItems="center" px="$6">
-                  <VStack space="xs" alignItems="flex-start">
-                    <Heading variant="section">
-                      מומלץ עבורך
-                    </Heading>
-                    <Text fontSize="$sm" color="$textLight600" $dark={{color: "$textDark400"}}>
-                      מבוסס על העדפותיך ופעילותך
-                    </Text>
-                  </VStack>
-                  <Button variant="outline" size="sm" borderColor="$success500">
-                    <HStack space="xs" alignItems="center">
-                      <Ionicons name="star" size={16} color="#10b981" />
-                      <ButtonText color="$success600" fontSize="$sm" fontWeight="$semibold">
-                        עדכן העדפות
-                      </ButtonText>
-                    </HStack>
-                  </Button>
-                </HStack>
-
-                <Divider mx="$6" bg="$borderLight300" opacity={0.6} />
-
-                <ScrollView
-                  horizontal
-                  showsHorizontalScrollIndicator={false}
-                  contentContainerStyle={{
-                    paddingHorizontal: 24,
-                    gap: 20,
-                  }}
-                >
-                  {recommendations.map((item, index) => {
-                    const isField = 'sportType' in item;
-                    return (
-                      <VibrantCard
-                        key={`rec-${item.id}`}
-                        item={item}
-                        type={isField ? "field" : "game"}
-                        onPress={() => console.log('Recommendation pressed:', item.id)}
+                      <Ionicons 
+                        name="chevron-forward" 
+                        size={16} 
+                        color={theme.colors.text.secondary}
                       />
-                    );
-                  })}
-                </ScrollView>
+                    </HStack>
+                  </Button>
+                </HStack>
+                
+                {/* Compact Stats Grid - Updated colors */}
+                <HStack space="md">
+                  <Box
+                    flex={1}
+                    bg="$backgroundLight0"
+                    $dark={{bg: "$backgroundDark800"}}
+                    borderRadius="$xl"
+                    p="$4"
+                    borderWidth={1}
+                    borderColor="$borderLight200"
+                    $dark={{borderColor: "$borderDark700"}}
+                    shadowColor="#10b981"
+                    shadowOffset={{ width: 0, height: 2 }}
+                    shadowOpacity={0.05}
+                    shadowRadius={4}
+                    elevation={2}
+                  >
+                    <VStack space="xs" alignItems="center">
+                      <Box
+                        bg="rgba(16, 185, 129, 0.15)"
+                        borderRadius="$full"
+                        p="$2"
+                        width={40}
+                        height={40}
+                        alignItems="center"
+                        justifyContent="center"
+                      >
+                        <Ionicons name="calendar" size={20} color="#059669" />
+                      </Box>
+                      <Heading size="lg" fontWeight="$bold" color="$textLight900" $dark={{color: "$textDark50"}}>
+                        5
+                      </Heading>
+                      <Text fontSize="$xs" color="$textLight600" $dark={{color: "$textDark400"}} textAlign="center">
+                        משחקים השבוע
+                      </Text>
+                    </VStack>
+                  </Box>
+                  
+                  <Box
+                    flex={1}
+                    bg="$backgroundLight0"
+                    $dark={{bg: "$backgroundDark800"}}
+                    borderRadius="$xl"
+                    p="$4"
+                    borderWidth={1}
+                    borderColor="$borderLight200"
+                    $dark={{borderColor: "$borderDark700"}}
+                    shadowColor="#8b5cf6"
+                    shadowOffset={{ width: 0, height: 2 }}
+                    shadowOpacity={0.05}
+                    shadowRadius={4}
+                    elevation={2}
+                  >
+                    <VStack space="xs" alignItems="center">
+                      <Box
+                        bg="rgba(139, 92, 246, 0.15)"
+                        borderRadius="$full"
+                        p="$2"
+                        width={40}
+                        height={40}
+                        alignItems="center"
+                        justifyContent="center"
+                      >
+                        <Ionicons name="people" size={20} color="#7c3aed" />
+                      </Box>
+                      <Heading size="lg" fontWeight="$bold" color="$textLight900" $dark={{color: "$textDark50"}}>
+                        18
+                      </Heading>
+                      <Text fontSize="$xs" color="$textLight600" $dark={{color: "$textDark400"}} textAlign="center">
+                        חברים פעילים
+                      </Text>
+                    </VStack>
+                  </Box>
+                  
+                  <Box
+                    flex={1}
+                    bg="$backgroundLight0"
+                    $dark={{bg: "$backgroundDark800"}}
+                    borderRadius="$xl"
+                    p="$4"
+                    borderWidth={1}
+                    borderColor="$borderLight200"
+                    $dark={{borderColor: "$borderDark700"}}
+                    shadowColor="#f59e0b"
+                    shadowOffset={{ width: 0, height: 2 }}
+                    shadowOpacity={0.05}
+                    shadowRadius={4}
+                    elevation={2}
+                  >
+                    <VStack space="xs" alignItems="center">
+                      <Box
+                        bg="rgba(245, 158, 11, 0.15)"
+                        borderRadius="$full"
+                        p="$2"
+                        width={40}
+                        height={40}
+                        alignItems="center"
+                        justifyContent="center"
+                      >
+                        <Ionicons name="wallet" size={20} color="#d97706" />
+                      </Box>
+                      <Heading size="lg" fontWeight="$bold" color="$textLight900" $dark={{color: "$textDark50"}}>
+                        ₪580
+                      </Heading>
+                      <Text fontSize="$xs" color="$textLight600" $dark={{color: "$textDark400"}} textAlign="center">
+                        הוצאות חודש
+                      </Text>
+                    </VStack>
+                  </Box>
+                </HStack>
               </VStack>
             </Animated.View>
 
-            {/* Enhanced Join Games Section */}
+            {/* Activity Feed - Show upcoming games and recent activity */}
+            <Animated.View entering={FadeInRight.delay(300).duration(600)}>
+              <VStack space="md" mx="$6">
+                <HStack justifyContent="space-between" alignItems="center">
+                  <Heading 
+                    size="lg"
+                    fontWeight="$bold"
+                    color="$textLight900"
+                    $dark={{color: "$textDark50"}}
+                  >
+                    פעילות אחרונה
+                  </Heading>
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    borderColor="$borderLight300"
+                    $dark={{borderColor: "$borderDark600"}}
+                    bg="$backgroundLight50"
+                    $dark={{bg: "$backgroundDark700"}}
+                  >
+                    <HStack space="xs" alignItems="center">
+                      <ButtonText 
+                        color="$textLight700" 
+                        $dark={{color: "$textDark300"}}
+                        fontSize="$sm" 
+                        fontWeight="$medium"
+                      >
+                        הצג הכל
+                      </ButtonText>
+                      <Ionicons 
+                        name="chevron-forward" 
+                        size={16} 
+                        color={theme.colors.text.secondary}
+                      />
+                    </HStack>
+                  </Button>
+                </HStack>
+                
+                {/* Activity List */}
+                <VStack space="sm">
+                  <Box
+                    bg="$backgroundLight0"
+                    $dark={{bg: "$backgroundDark800"}}
+                    borderRadius="$lg"
+                    p="$4"
+                    borderWidth={1}
+                    borderColor="$borderLight200"
+                    $dark={{borderColor: "$borderDark700"}}
+                  >
+                    <HStack space="md" alignItems="center">
+                      <Box
+                        bg="rgba(34, 197, 94, 0.15)"
+                        borderRadius="$full"
+                        p="$2"
+                        width={40}
+                        height={40}
+                        alignItems="center"
+                        justifyContent="center"
+                      >
+                        <Ionicons name="checkmark-circle" size={20} color="#15803d" />
+                      </Box>
+                      <VStack space="xs" flex={1} alignItems="flex-start">
+                        <Text fontSize="$md" fontWeight="$medium" color="$textLight900" $dark={{color: "$textDark50"}} textAlign="left">
+                          השלמת משחק כדורגל
+                        </Text>
+                        <Text fontSize="$sm" color="$textLight600" $dark={{color: "$textDark400"}} textAlign="left">
+                          מגרש הכוכבים • לפני שעתיים
+                        </Text>
+                      </VStack>
+                      <Box
+                        bg="$success100"
+                        borderRadius="$md"
+                        px="$2"
+                        py="$1"
+                      >
+                        <Text fontSize="$xs" color="$success700" fontWeight="$medium">
+                          +15 נק'
+                        </Text>
+                      </Box>
+                    </HStack>
+                  </Box>
+                  
+                  <Box
+                    bg="$backgroundLight0"
+                    $dark={{bg: "$backgroundDark800"}}
+                    borderRadius="$lg"
+                    p="$4"
+                    borderWidth={1}
+                    borderColor="$borderLight200"
+                    $dark={{borderColor: "$borderDark700"}}
+                  >
+                    <HStack space="md" alignItems="center">
+                      <Box
+                        bg="rgba(59, 130, 246, 0.15)"
+                        borderRadius="$full"
+                        p="$2"
+                        width={40}
+                        height={40}
+                        alignItems="center"
+                        justifyContent="center"
+                      >
+                        <Ionicons name="person-add" size={20} color="#2563eb" />
+                      </Box>
+                      <VStack space="xs" flex={1} alignItems="flex-start">
+                        <Text fontSize="$md" fontWeight="$medium" color="$textLight900" $dark={{color: "$textDark50"}} textAlign="left">
+                          דני הזמין אותך למשחק
+                        </Text>
+                        <Text fontSize="$sm" color="$textLight600" $dark={{color: "$textDark400"}} textAlign="left">
+                          כדורסל • מחר ב-19:00
+                        </Text>
+                      </VStack>
+                      <Button variant="outline" size="xs">
+                        <ButtonText fontSize="$xs" fontWeight="$medium">
+                          הצטרף
+                        </ButtonText>
+                      </Button>
+                    </HStack>
+                  </Box>
+                  
+                  <Box
+                    bg="$backgroundLight0"
+                    $dark={{bg: "$backgroundDark800"}}
+                    borderRadius="$lg"
+                    p="$4"
+                    borderWidth={1}
+                    borderColor="$borderLight200"
+                    $dark={{borderColor: "$borderDark700"}}
+                  >
+                    <HStack space="md" alignItems="center">
+                      <Box
+                        bg="rgba(168, 85, 247, 0.15)"
+                        borderRadius="$full"
+                        p="$2"
+                        width={40}
+                        height={40}
+                        alignItems="center"
+                        justifyContent="center"
+                      >
+                        <Ionicons name="calendar" size={20} color="#7c3aed" />
+                      </Box>
+                      <VStack space="xs" flex={1} alignItems="flex-start">
+                        <Text fontSize="$md" fontWeight="$medium" color="$textLight900" $dark={{color: "$textDark50"}} textAlign="left">
+                          הזמנת מגרש טניס
+                        </Text>
+                        <Text fontSize="$sm" color="$textLight600" $dark={{color: "$textDark400"}} textAlign="left">
+                          מגרש רמת השרון • עוד 3 ימים
+                        </Text>
+                      </VStack>
+                      <Text fontSize="$sm" color="$warning600" fontWeight="$medium">
+                        ₪120
+                      </Text>
+                    </HStack>
+                  </Box>
+                </VStack>
+              </VStack>
+            </Animated.View>
+
+            {/* Quick Actions */}
             <Animated.View entering={FadeInRight.delay(400).duration(600)}>
-              <VStack space="lg">
-                <HStack justifyContent="space-between" alignItems="center" px="$6">
-                  <Heading variant="section">
-                    הצטרף למשחק
-                  </Heading>
-                  <Button variant="vibrant" size="sm">
-                    <HStack space="xs" alignItems="center">
-                      <Ionicons name="people" size={18} color="white" />
-                      <ButtonText color="$white" fontSize="$sm" fontWeight="$bold">
-                        כל המשחקים
-                      </ButtonText>
-                    </HStack>
-                  </Button>
-                </HStack>
-
-                <Divider mx="$6" bg="$borderLight300" opacity={0.6} />
-
-                <ScrollView
-                  horizontal
-                  showsHorizontalScrollIndicator={false}
-                  contentContainerStyle={{
-                    paddingHorizontal: 24,
-                    gap: 20,
-                  }}
-                  onMomentumScrollEnd={(event) => {
-                    const { contentOffset, contentSize, layoutMeasurement } = event.nativeEvent;
-                    const isCloseToEnd = contentOffset.x >= contentSize.width - layoutMeasurement.width - 100;
-                    if (isCloseToEnd) {
-                      loadMoreGames();
-                    }
-                  }}
+              <VStack space="md" mx="$6">
+                <Heading 
+                  size="lg"
+                  fontWeight="$bold"
+                  color="$textLight900"
+                  $dark={{color: "$textDark50"}}
+                  textAlign="left"
                 >
-                  {games.map((game, index) => (
-                    <VibrantCard
-                      key={game.id}
-                      item={game}
-                      type="game"
-                      onPress={() => console.log('Game pressed:', game.id)}
-                    />
-                  ))}
-                  {hasMoreGames && (
-                    <Box width={280} height={200} justifyContent="center" alignItems="center">
-                      <Button variant="outline" onPress={loadMoreGames}>
-                        <ButtonText>טען עוד</ButtonText>
-                      </Button>
-                    </Box>
-                  )}
-                </ScrollView>
+                  פעולות מהירות
+                </Heading>
+                
+                <HStack space="md">
+                  <Pressable
+                    flex={1}
+                    borderRadius="$xl"
+                    p="$4"
+                    shadowColor="#ec4899"
+                    shadowOffset={{ width: 0, height: 4 }}
+                    shadowOpacity={0.25}
+                    shadowRadius={8}
+                    elevation={6}
+                    style={{
+                      background: 'linear-gradient(135deg, #ec4899 0%, #be185d 100%)'
+                    }}
+                    bg="#ec4899" // Fallback
+                    $pressed={{
+                      transform: [{ scale: 0.98 }],
+                    }}
+                  >
+                    <VStack space="md" alignItems="center">
+                      <Box
+                        bg="rgba(255,255,255,0.2)"
+                        borderRadius="$full"
+                        p="$3"
+                        width={56}
+                        height={56}
+                        alignItems="center"
+                        justifyContent="center"
+                      >
+                        <Ionicons name="people" size={28} color="white" />
+                      </Box>
+                      <VStack space="xs" alignItems="flex-start">
+                        <Text fontSize="$md" fontWeight="$bold" color="white" textAlign="left">
+                          הצטרף למשחק
+                        </Text>
+                        <Text fontSize="$xs" color="rgba(255,255,255,0.8)" textAlign="left">
+                          מצא חברים לספורט
+                        </Text>
+                      </VStack>
+                    </VStack>
+                  </Pressable>
+                  
+                  <Pressable
+                    flex={1}
+                    borderRadius="$xl"
+                    p="$4"
+                    shadowColor="#10b981"
+                    shadowOffset={{ width: 0, height: 4 }}
+                    shadowOpacity={0.25}
+                    shadowRadius={8}
+                    elevation={6}
+                    style={{
+                      background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)'
+                    }}
+                    bg="#10b981" // Fallback
+                    $pressed={{
+                      transform: [{ scale: 0.98 }],
+                    }}
+                  >
+                    <VStack space="md" alignItems="center">
+                      <Box
+                        bg="rgba(255,255,255,0.2)"
+                        borderRadius="$full"
+                        p="$3"
+                        width={56}
+                        height={56}
+                        alignItems="center"
+                        justifyContent="center"
+                      >
+                        <Ionicons name="calendar" size={28} color="white" />
+                      </Box>
+                      <VStack space="xs" alignItems="flex-start">
+                        <Text fontSize="$md" fontWeight="$bold" color="white" textAlign="left">
+                          הזמן מגרש
+                        </Text>
+                        <Text fontSize="$xs" color="rgba(255,255,255,0.8)" textAlign="left">
+                          מגרשים בקרבתך
+                        </Text>
+                      </VStack>
+                    </VStack>
+                  </Pressable>
+                </HStack>
               </VStack>
             </Animated.View>
 
-            {/* Enhanced Nearby Fields Section */}
-            <Animated.View entering={FadeInRight.delay(600).duration(600)}>
-              <VStack space="lg">
-                <HStack justifyContent="space-between" alignItems="center" px="$6">
-                  <Heading variant="section">
-                    מגרשים בקרבתך
+            {/* Featured Games Preview */}
+            <Animated.View entering={FadeInRight.delay(500).duration(600)}>
+              <VStack space="md" mx="$6">
+                <HStack justifyContent="space-between" alignItems="center">
+                  <Heading 
+                    size="lg"
+                    fontWeight="$bold"
+                    color="$textLight900"
+                    $dark={{color: "$textDark50"}}
+                  >
+                    משחקים פתוחים
                   </Heading>
-                  <Button variant="vibrant" size="sm">
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    borderColor="$borderLight300"
+                    $dark={{borderColor: "$borderDark600"}}
+                    bg="$backgroundLight50"
+                    $dark={{bg: "$backgroundDark700"}}
+                  >
                     <HStack space="xs" alignItems="center">
-                      <Ionicons name="add" size={18} color="white" />
-                      <ButtonText color="$white" fontSize="$sm" fontWeight="$bold">
-                        הזמן מגרש
+                      <ButtonText 
+                        color="$textLight700" 
+                        $dark={{color: "$textDark300"}}
+                        fontSize="$sm" 
+                        fontWeight="$medium"
+                      >
+                        הצג הכל
                       </ButtonText>
+                      <Ionicons 
+                        name="chevron-forward" 
+                        size={16} 
+                        color={theme.colors.text.secondary}
+                      />
                     </HStack>
                   </Button>
                 </HStack>
-
-                <Divider mx="$6" bg="$borderLight300" opacity={0.6} />
-
-                <ScrollView
-                  horizontal
-                  showsHorizontalScrollIndicator={false}
-                  contentContainerStyle={{
-                    paddingHorizontal: 24,
-                    gap: 20,
-                  }}
-                  onMomentumScrollEnd={(event) => {
-                    const { contentOffset, contentSize, layoutMeasurement } = event.nativeEvent;
-                    const isCloseToEnd = contentOffset.x >= contentSize.width - layoutMeasurement.width - 100;
-                    if (isCloseToEnd) {
-                      loadMoreFields();
-                    }
-                  }}
-                >
-                  {fields.map((field, index) => (
-                    <VibrantCard
-                      key={field.id}
-                      item={field}
-                      type="field"
-                      onPress={() => console.log('Field pressed:', field.id)}
-                    />
+                
+                {/* Show first 2 games in vertical list with horizontal peek */}
+                <VStack space="sm">
+                  {games.slice(0, 2).map((game, index) => (
+                    <Pressable
+                      key={game.id}
+                      bg="$backgroundLight0"
+                      $dark={{bg: "$backgroundDark800"}}
+                      borderRadius="$lg"
+                      p="$4"
+                      borderWidth={1}
+                      borderColor="$borderLight200"
+                      $dark={{borderColor: "$borderDark700"}}
+                      $pressed={{
+                        bg: '$backgroundLight50',
+                        transform: [{ scale: 0.99 }],
+                      }}
+                    >
+                      <HStack space="md" alignItems="center">
+                        <Box
+                          bg={index === 0 ? "rgba(139, 92, 246, 0.1)" : "rgba(239, 68, 68, 0.1)"}
+                          borderRadius="$full"
+                          p="$3"
+                          width={48}
+                          height={48}
+                          alignItems="center"
+                          justifyContent="center"
+                        >
+                          <Ionicons 
+                            name={index === 0 ? "football" : "basketball"} 
+                            size={24} 
+                            color={index === 0 ? "#8b5cf6" : "#ef4444"} 
+                          />
+                        </Box>
+                        
+                        <VStack space="xs" flex={1} alignItems="flex-start">
+                          <Text fontSize="$md" fontWeight="$bold" color="$textLight900" $dark={{color: "$textDark50"}} textAlign="left">
+                            {game.sport}
+                          </Text>
+                          <Text fontSize="$sm" color="$textLight600" $dark={{color: "$textDark400"}} textAlign="left">
+                            {game.fieldName} • {game.time}
+                          </Text>
+                          <HStack space="xs" alignItems="center" alignSelf="flex-start">
+                            <Ionicons name="people" size={14} color="#10b981" />
+                            <Text fontSize="$xs" color="$success600" fontWeight="$medium">
+                              {game.currentPlayers}/{game.maxPlayers} שחקנים
+                            </Text>
+                          </HStack>
+                        </VStack>
+                        
+                        <Button variant="outline" size="sm">
+                          <ButtonText fontSize="$sm" fontWeight="$medium">
+                            הצטרף
+                          </ButtonText>
+                        </Button>
+                      </HStack>
+                    </Pressable>
                   ))}
-                  {hasMoreFields && (
-                    <Box width={280} height={200} justifyContent="center" alignItems="center">
-                      <Button variant="outline" onPress={loadMoreFields}>
-                        <ButtonText>טען עוד</ButtonText>
-                      </Button>
-                    </Box>
-                  )}
-                </ScrollView>
+                </VStack>
               </VStack>
             </Animated.View>
 
