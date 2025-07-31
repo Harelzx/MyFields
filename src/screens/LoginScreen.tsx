@@ -16,14 +16,11 @@ import Animated, {
   useAnimatedStyle,
   withSpring,
   withTiming,
-  withDelay,
-  Easing,
-  runOnJS,
   FadeInDown,
   FadeInUp
 } from 'react-native-reanimated';
 import { RTLText } from '@components/design-system/RTLText';
-import { Input, WoltButton, LoadingSpinner, MyFieldsLogo } from '@components/design-system';
+import { WoltButton, LoadingSpinner, MyFieldsLogo } from '@components/design-system';
 import { designTokens } from '@constants/theme';
 import { texts } from '@constants/hebrewTexts';
 import { loginUser } from '@services/mockApi';
@@ -43,39 +40,17 @@ const SocialButton: React.FC<{
   text: string;
   accessibilityLabel: string;
 }> = ({ onPress, icon, iconColor, text, accessibilityLabel }) => {
-  const scale = useSharedValue(1);
-  const opacity = useSharedValue(1);
-
-  const animatedStyle = useAnimatedStyle(() => ({
-    transform: [{ scale: scale.value }],
-    opacity: opacity.value,
-  }));
-
-  const handlePressIn = () => {
-    scale.value = withSpring(0.95, { damping: 15, stiffness: 400 });
-    opacity.value = withTiming(0.8, { duration: 100 });
-  };
-
-  const handlePressOut = () => {
-    scale.value = withSpring(1, { damping: 15, stiffness: 400 });
-    opacity.value = withTiming(1, { duration: 100 });
-  };
-
   return (
-    <Animated.View style={[styles.socialButton, animatedStyle]}>
-      <TouchableOpacity
-        style={styles.socialButtonInner}
-        onPress={onPress}
-        onPressIn={handlePressIn}
-        onPressOut={handlePressOut}
-        activeOpacity={1}
-        accessibilityLabel={accessibilityLabel}
-        accessibilityRole="button"
-      >
-        <Ionicons name={icon as any} size={20} color={iconColor} />
-        <RTLText style={styles.socialButtonText}>{text}</RTLText>
-      </TouchableOpacity>
-    </Animated.View>
+    <TouchableOpacity
+      style={styles.socialButton}
+      onPress={onPress}
+      activeOpacity={0.7}
+      accessibilityLabel={accessibilityLabel}
+      accessibilityRole="button"
+    >
+      <Ionicons name={icon as any} size={20} color={iconColor} />
+      <RTLText style={styles.socialButtonText}>{text}</RTLText>
+    </TouchableOpacity>
   );
 };
 
@@ -90,17 +65,6 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
   const [passwordError, setPasswordError] = useState('');
   const [isBiometricAvailable, setIsBiometricAvailable] = useState(false);
   const [biometricType, setBiometricType] = useState<LocalAuthentication.AuthenticationType | null>(null);
-
-  // Animation values
-  const logoScale = useSharedValue(0.8);
-  const logoOpacity = useSharedValue(0);
-  const logoTranslateY = useSharedValue(-20);
-  const formTranslateY = useSharedValue(60);
-  const formOpacity = useSharedValue(0);
-  const formScale = useSharedValue(0.95);
-  const passwordToggleScale = useSharedValue(1);
-  const socialButtonsOpacity = useSharedValue(0);
-  const socialButtonsTranslateY = useSharedValue(20);
 
   useEffect(() => {
     // Check biometric availability
@@ -136,51 +100,9 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
     
     checkBiometricSupport();
     loadSavedCredentials();
-    
-    // Animate logo entrance
-    logoScale.value = withSpring(1, { damping: 15, stiffness: 100 });
-    logoOpacity.value = withTiming(1, { duration: 800, easing: Easing.out(Easing.cubic) });
-    logoTranslateY.value = withSpring(0, { damping: 20, stiffness: 90 });
-    
-    // Animate form entrance with delay - slide up from below
-    formTranslateY.value = withDelay(150, withSpring(0, { damping: 18, stiffness: 85 }));
-    formOpacity.value = withDelay(150, withTiming(1, { duration: 500, easing: Easing.out(Easing.cubic) }));
-    formScale.value = withDelay(150, withSpring(1, { damping: 14, stiffness: 90 }));
-    
-    // Animate social buttons with stagger
-    socialButtonsOpacity.value = withDelay(400, withTiming(1, { duration: 500 }));
-    socialButtonsTranslateY.value = withDelay(400, withSpring(0, { damping: 18, stiffness: 85 }));
   }, []);
 
-  const logoAnimatedStyle = useAnimatedStyle(() => ({
-    transform: [
-      { scale: logoScale.value },
-      { translateY: logoTranslateY.value }
-    ],
-    opacity: logoOpacity.value,
-  }));
-
-  const formAnimatedStyle = useAnimatedStyle(() => ({
-    transform: [
-      { translateY: formTranslateY.value },
-      { scale: formScale.value }
-    ],
-    opacity: formOpacity.value,
-  }));
-
-  const socialButtonsAnimatedStyle = useAnimatedStyle(() => ({
-    opacity: socialButtonsOpacity.value,
-    transform: [{ translateY: socialButtonsTranslateY.value }],
-  }));
-
-  const passwordToggleAnimatedStyle = useAnimatedStyle(() => ({
-    transform: [{ scale: passwordToggleScale.value }],
-  }));
-
   const handlePasswordToggle = () => {
-    passwordToggleScale.value = withTiming(0.8, { duration: 100 }, () => {
-      passwordToggleScale.value = withSpring(1, { damping: 10 });
-    });
     setShowPassword(!showPassword);
   };
   
@@ -244,17 +166,23 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
   
   const handleEmailChange = (text: string) => {
     setEmail(text);
-    if (emailError) {
+    // Real-time validation - only show errors after user has typed something substantial
+    if (text.length > 3) {
       const error = validateEmail(text);
       setEmailError(error);
+    } else {
+      setEmailError('');
     }
   };
   
   const handlePasswordChange = (text: string) => {
     setPassword(text);
-    if (passwordError) {
+    // Real-time validation - only show errors after user has typed something
+    if (text.length > 0) {
       const error = validatePassword(text);
       setPasswordError(error);
+    } else {
+      setPasswordError('');
     }
   };
   
@@ -329,227 +257,198 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
       >
         <ScrollView 
           contentContainerStyle={styles.scrollContent}
-          keyboardShouldPersistTaps="never"
+          keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
         >
-          <View style={styles.backgroundContainer}>
-            <View style={styles.mainContent}>
-              <View style={styles.formSection}>
-                <View style={styles.formCard}>
-                  <View style={styles.formContainer}>
-                    {/* Header section with proper hierarchy */}
-                    <View style={styles.headerSection}>
-                      {/* Logo */}
-                      <Animated.View style={[styles.logoContainerInForm, logoAnimatedStyle]}>
-                        <View style={styles.logoShadowContainer}>
-                          <MyFieldsLogo size={80} backgroundColor="transparent" />
-                        </View>
-                      </Animated.View>
-                      
-                      {/* Product subtitle */}
-                      <RTLText center style={styles.productSubtitle}>
-                        הזמן מגרש בקלות
-                      </RTLText>
-                      
-                      {/* Primary welcome text */}
-                      <RTLText center style={styles.welcomeHeadline}>
-                        ברוך השב!
-                      </RTLText>
-                      
-                      {/* Supporting text */}
-                      <RTLText center style={styles.supportingText}>
-                        התחבר כדי להמשיך
-                      </RTLText>
-                    </View>
-
-                    <View style={styles.form}>
-                      <Animated.View entering={FadeInDown.delay(200).duration(600)}>
-                        <View style={[styles.inputContainer, emailError && styles.inputError]}>
-                          <Ionicons name="mail-outline" size={20} color={emailError ? designTokens.colors.error[500] : "#64748B"} style={styles.leftIcon} />
-                          <TextInput
-                            style={[styles.textInput, emailError && styles.textInputError]}
-                            value={email}
-                            onChangeText={handleEmailChange}
-                            onBlur={() => setEmailError(validateEmail(email))}
-                            placeholder="הזן את האימייל שלך"
-                            keyboardType="email-address"
-                            autoCapitalize="none"
-                            autoCorrect={false}
-                            accessibilityLabel="שדה אימייל"
-                          />
-                        </View>
-                        {emailError ? (
-                          <RTLText style={styles.inputErrorText}>{emailError}</RTLText>
-                        ) : null}
-                      </Animated.View>
-
-                      <Animated.View entering={FadeInDown.delay(300).duration(600)}>
-                        <View style={[styles.inputContainer, passwordError && styles.inputError]}>
-                          <Ionicons name="lock-closed-outline" size={20} color={passwordError ? designTokens.colors.error[500] : "#64748B"} style={styles.leftIcon} />
-                          <TextInput
-                            style={[styles.textInput, passwordError && styles.textInputError]}
-                            value={password}
-                            onChangeText={handlePasswordChange}
-                            onBlur={() => setPasswordError(validatePassword(password))}
-                            placeholder="הזן את הסיסמה שלך"
-                            secureTextEntry={!showPassword}
-                            accessibilityLabel="שדה סיסמה"
-                          />
-                          <TouchableOpacity 
-                            style={styles.toggleButton}
-                            onPress={handlePasswordToggle}
-                            accessibilityLabel={showPassword ? "הסתר סיסמה" : "הצג סיסמה"}
-                          >
-                            <Animated.View style={passwordToggleAnimatedStyle}>
-                              <Ionicons 
-                                name={showPassword ? "eye-outline" : "eye-off-outline"} 
-                                size={20} 
-                                color={passwordError ? designTokens.colors.error[500] : "#64748B"} 
-                              />
-                            </Animated.View>
-                          </TouchableOpacity>
-                        </View>
-                        {passwordError ? (
-                          <RTLText style={styles.inputErrorText}>{passwordError}</RTLText>
-                        ) : null}
-                      </Animated.View>
-                      
-                      {/* Remember Me Toggle */}
-                      <Animated.View entering={FadeInDown.delay(350).duration(600)} style={styles.rememberMeContainer}>
-                        <View style={styles.rememberMeContent}>
-                          <RTLText style={styles.rememberMeText}>זכור אותי</RTLText>
-                          <Switch
-                            value={rememberMe}
-                            onValueChange={(value) => {
-                              setRememberMe(value);
-                              if (value) {
-                                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                              }
-                            }}
-                            trackColor={{ false: '#E2E8F0', true: designTokens.colors.primary[200] }}
-                            thumbColor={rememberMe ? designTokens.colors.primary[600] : '#94A3B8'}
-                            ios_backgroundColor="#E2E8F0"
-                          />
-                        </View>
-                      </Animated.View>
-
-                      {error ? (
-                        <View style={styles.errorContainer}>
-                          <RTLText style={styles.errorText}>{error}</RTLText>
-                        </View>
-                      ) : null}
-
-                      <View style={styles.formActions}>
-                        <TouchableOpacity 
-                          style={styles.forgotPassword}
-                          accessibilityLabel="שחזר סיסמה"
-                          accessibilityRole="button"
-                        >
-                          <RTLText style={styles.forgotPasswordText}>
-                            שכחת סיסמה?
-                          </RTLText>
-                        </TouchableOpacity>
-
-                        <Animated.View entering={FadeInUp.delay(400).duration(600)}>
-                          <WoltButton
-                            variant="primary"
-                            fullWidth
-                            onPress={handleLogin}
-                            style={styles.loginButton}
-                            disabled={isLoading || (!email || !password)}
-                            accessibilityLabel="התחבר לחשבון"
-                          >
-                            {isLoading ? (
-                              <View style={styles.loadingContent}>
-                                <LoadingSpinner size="small" color={designTokens.colors.text.inverse} />
-                                <RTLText style={styles.loadingText}>מתחבר...</RTLText>
-                              </View>
-                            ) : (
-                              <View style={styles.buttonContent}>
-                                <Ionicons name="log-in" size={20} color={designTokens.colors.text.inverse} />
-                                <RTLText style={styles.buttonText}>{texts.auth.signIn}</RTLText>
-                              </View>
-                            )}
-                          </WoltButton>
-                        </Animated.View>
-                        
-                        {/* Biometric Authentication Button */}
-                        {isBiometricAvailable && (
-                          <Animated.View entering={FadeInUp.delay(500).duration(600)} style={styles.biometricContainer}>
-                            <View style={styles.biometricDivider}>
-                              <View style={styles.divider} />
-                              <RTLText style={styles.biometricDividerText}>או</RTLText>
-                              <View style={styles.divider} />
-                            </View>
-                            <WoltButton
-                              variant="outline"
-                              fullWidth
-                              onPress={handleBiometricAuth}
-                              style={styles.biometricButton}
-                              disabled={isLoading}
-                              accessibilityLabel={`התחבר באמצעות ${biometricType === LocalAuthentication.AuthenticationType.FACIAL_RECOGNITION ? 'Face ID' : 'Touch ID'}`}
-                            >
-                              <View style={styles.buttonContent}>
-                                <Ionicons 
-                                  name={biometricType === LocalAuthentication.AuthenticationType.FACIAL_RECOGNITION ? "scan" : "finger-print"} 
-                                  size={20} 
-                                  color={designTokens.colors.primary[600]} 
-                                />
-                                <RTLText style={styles.biometricButtonText}>
-                                  {biometricType === LocalAuthentication.AuthenticationType.FACIAL_RECOGNITION ? 'Face ID' : 'Touch ID'}
-                                </RTLText>
-                              </View>
-                            </WoltButton>
-                          </Animated.View>
-                        )}
-                      </View>
-
-                      {/* Social Login */}
-                      <Animated.View style={[styles.socialSection, socialButtonsAnimatedStyle]}>
-                        <View style={styles.dividerContainer}>
-                          <View style={styles.divider} />
-                          <RTLText style={styles.dividerText}>או התחבר עם</RTLText>
-                          <View style={styles.divider} />
-                        </View>
-
-                        <View style={styles.socialButtonsContainer}>
-                          <SocialButton
-                            onPress={() => {}}
-                            icon="logo-google"
-                            iconColor="#4285F4"
-                            text="Google"
-                            accessibilityLabel="התחבר עם Google"
-                          />
-                          <SocialButton
-                            onPress={() => {}}
-                            icon="logo-apple"
-                            iconColor="#000000"
-                            text="Apple"
-                            accessibilityLabel="התחבר עם Apple"
-                          />
-                        </View>
-                      </Animated.View>
-
-                      {/* Signup Link */}
-                      <View style={styles.signupSection}>
-                        <RTLText style={styles.signupText}>
-                          {texts.auth.dontHaveAccount}
-                        </RTLText>
-                        <TouchableOpacity 
-                          onPress={navigateToSignup}
-                          accessibilityLabel="צור חשבון חדש"
-                          accessibilityRole="button"
-                        >
-                          <RTLText style={styles.signupLink}>
-                            {texts.auth.createAccount}
-                          </RTLText>
-                        </TouchableOpacity>
-                      </View>
-                    </View>
-                  </View>
-                </View>
-              </View>
+          {/* Header section with clean hierarchy */}
+          <View style={styles.headerSection}>
+            <View style={styles.logoContainer}>
+              <MyFieldsLogo size={60} backgroundColor="transparent" />
             </View>
+            
+            <RTLText style={styles.welcomeTitle}>ברוך השב!</RTLText>
+            <RTLText style={styles.welcomeSubtitle}>התחבר כדי להמשיך</RTLText>
+          </View>
+
+          {/* Main form */}
+          <View style={styles.formCard}>
+            <View style={styles.form}>
+              {/* Email Input */}
+              <View style={styles.inputGroup}>
+                <View style={[styles.inputContainer, emailError && styles.inputContainerError]}>
+                  <Ionicons 
+                    name="mail-outline" 
+                    size={20} 
+                    color={emailError ? designTokens.colors.error[500] : designTokens.colors.text.tertiary} 
+                    style={styles.inputIcon} 
+                  />
+                  <TextInput
+                    style={[styles.textInput, emailError && styles.textInputError]}
+                    value={email}
+                    onChangeText={handleEmailChange}
+                    placeholder="אימייל"
+                    placeholderTextColor={designTokens.colors.text.tertiary}
+                    keyboardType="email-address"
+                    autoCapitalize="none"
+                    autoCorrect={false}
+                    accessibilityLabel="שדה אימייל"
+                  />
+                </View>
+                {emailError ? (
+                  <RTLText style={styles.errorText}>{emailError}</RTLText>
+                ) : null}
+              </View>
+
+              {/* Password Input */}
+              <View style={styles.inputGroup}>
+                <View style={[styles.inputContainer, passwordError && styles.inputContainerError]}>
+                  <Ionicons 
+                    name="lock-closed-outline" 
+                    size={20} 
+                    color={passwordError ? designTokens.colors.error[500] : designTokens.colors.text.tertiary} 
+                    style={styles.inputIcon} 
+                  />
+                  <TextInput
+                    style={[styles.textInput, passwordError && styles.textInputError]}
+                    value={password}
+                    onChangeText={handlePasswordChange}
+                    placeholder="סיסמה"
+                    placeholderTextColor={designTokens.colors.text.tertiary}
+                    secureTextEntry={!showPassword}
+                    accessibilityLabel="שדה סיסמה"
+                  />
+                  <TouchableOpacity 
+                    style={styles.passwordToggle}
+                    onPress={handlePasswordToggle}
+                    accessibilityLabel={showPassword ? "הסתר סיסמה" : "הצג סיסמה"}
+                  >
+                    <Ionicons 
+                      name={showPassword ? "eye-outline" : "eye-off-outline"} 
+                      size={20} 
+                      color={passwordError ? designTokens.colors.error[500] : designTokens.colors.text.tertiary} 
+                    />
+                  </TouchableOpacity>
+                </View>
+                {passwordError ? (
+                  <RTLText style={styles.errorText}>{passwordError}</RTLText>
+                ) : null}
+              </View>
+              
+              {/* Options row */}
+              <View style={styles.optionsRow}>
+                <View style={styles.rememberMe}>
+                  <Switch
+                    value={rememberMe}
+                    onValueChange={(value) => {
+                      setRememberMe(value);
+                      if (value) {
+                        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                      }
+                    }}
+                    trackColor={{ false: designTokens.colors.border.light, true: designTokens.colors.primary[200] }}
+                    thumbColor={rememberMe ? designTokens.colors.primary[600] : designTokens.colors.text.disabled}
+                    ios_backgroundColor={designTokens.colors.border.light}
+                  />
+                  <RTLText style={styles.rememberMeText}>זכור אותי</RTLText>
+                </View>
+                
+                <TouchableOpacity 
+                  style={styles.forgotPassword}
+                  accessibilityLabel="שחזר סיסמה"
+                  accessibilityRole="button"
+                >
+                  <RTLText style={styles.forgotPasswordText}>שכחת סיסמה?</RTLText>
+                </TouchableOpacity>
+              </View>
+
+              {/* General error */}
+              {error ? (
+                <View style={styles.errorContainer}>
+                  <Ionicons name="alert-circle-outline" size={16} color={designTokens.colors.error[500]} />
+                  <RTLText style={styles.generalErrorText}>{error}</RTLText>
+                </View>
+              ) : null}
+
+              {/* Login button */}
+              <WoltButton
+                variant="primary"
+                fullWidth
+                onPress={handleLogin}
+                style={styles.loginButton}
+                disabled={isLoading || (!email || !password)}
+                accessibilityLabel="התחבר לחשבון"
+              >
+                {isLoading ? (
+                  <View style={styles.buttonContent}>
+                    <LoadingSpinner size="small" color={designTokens.colors.text.inverse} />
+                    <RTLText style={styles.buttonText}>מתחבר...</RTLText>
+                  </View>
+                ) : (
+                  <RTLText style={styles.buttonText}>{texts.auth.signIn}</RTLText>
+                )}
+              </WoltButton>
+              
+              {/* Biometric Authentication */}
+              {isBiometricAvailable && (
+                <WoltButton
+                  variant="outline"
+                  fullWidth
+                  onPress={handleBiometricAuth}
+                  style={styles.biometricButton}
+                  disabled={isLoading}
+                  accessibilityLabel={`התחבר באמצעות ${biometricType === LocalAuthentication.AuthenticationType.FACIAL_RECOGNITION ? 'Face ID' : 'Touch ID'}`}
+                >
+                  <View style={styles.buttonContent}>
+                    <Ionicons 
+                      name={biometricType === LocalAuthentication.AuthenticationType.FACIAL_RECOGNITION ? "scan" : "finger-print"} 
+                      size={20} 
+                      color={designTokens.colors.primary[600]} 
+                    />
+                    <RTLText style={styles.biometricButtonText}>
+                      {biometricType === LocalAuthentication.AuthenticationType.FACIAL_RECOGNITION ? 'Face ID' : 'Touch ID'}
+                    </RTLText>
+                  </View>
+                </WoltButton>
+              )}
+            </View>
+          </View>
+
+          {/* Social Login - Simplified */}
+          <View style={styles.socialSection}>
+            <View style={styles.dividerContainer}>
+              <View style={styles.divider} />
+              <RTLText style={styles.dividerText}>או</RTLText>
+              <View style={styles.divider} />
+            </View>
+
+            <View style={styles.socialButtons}>
+              <SocialButton
+                onPress={() => {}}
+                icon="logo-google"
+                iconColor="#4285F4"
+                text="Google"
+                accessibilityLabel="התחבר עם Google"
+              />
+              <SocialButton
+                onPress={() => {}}
+                icon="logo-apple"
+                iconColor="#000000"
+                text="Apple"
+                accessibilityLabel="התחבר עם Apple"
+              />
+            </View>
+          </View>
+
+          {/* Signup link */}
+          <View style={styles.signupSection}>
+            <RTLText style={styles.signupText}>אין לך חשבון?</RTLText>
+            <TouchableOpacity 
+              onPress={navigateToSignup}
+              accessibilityLabel="צור חשבון חדש"
+              accessibilityRole="button"
+            >
+              <RTLText style={styles.signupLink}>הירשם כאן</RTLText>
+            </TouchableOpacity>
           </View>
         </ScrollView>
       </KeyboardAvoidingView>
@@ -560,149 +459,146 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-  },
-  backgroundContainer: {
-    flex: 1,
-    backgroundColor: '#F8FAFC',
-  },
-  simpleContainer: {
-    flex: 1,
-    paddingHorizontal: 20,
-    paddingTop: 100,
-  },
-  scrollView: {
-    flex: 1,
+    backgroundColor: designTokens.colors.background.secondary,
   },
   scrollContent: {
-    paddingTop: 0,
-    paddingBottom: 10,
     flexGrow: 1,
-    justifyContent: 'center',
-    paddingHorizontal: 20,
+    paddingHorizontal: designTokens.spacing.xl,
+    paddingTop: designTokens.spacing.massive,
+    paddingBottom: designTokens.spacing.xxl,
   },
-  mainContent: {
-    justifyContent: 'center',
-  },
+  
+  // Header section - clean and minimal
   headerSection: {
     alignItems: 'center',
-    marginBottom: 20,
+    marginBottom: designTokens.spacing.xxxl,
   },
-  logoContainerInForm: {
-    alignItems: 'center',
-    marginBottom: 12,
-  },
-  logoShadowContainer: {
-    shadowColor: designTokens.colors.primary[500],
-    shadowOffset: {
-      width: 0,
-      height: 4,
-    },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 6,
-    backgroundColor: 'transparent',
-  },
-  productSubtitle: {
-    fontSize: 14,
-    color: '#64748B',
-    fontWeight: '500',
-    marginBottom: 8,
-    letterSpacing: 0.3,
-  },
-  welcomeHeadline: {
-    fontSize: 22,
-    fontWeight: '700',
-    color: '#1E293B',
-    marginBottom: 6,
-  },
-  supportingText: {
-    fontSize: 14,
-    color: '#64748B',
-    fontWeight: '400',
-    marginBottom: 20,
-  },
-  logoSubtextInForm: {
-    fontSize: 14,
-    color: designTokens.colors.text.secondary,
-    fontWeight: designTokens.typography.weights.medium,
-    marginTop: 8,
-  },
-  formSection: {
-    paddingVertical: 20,
-  },
-  formCard: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 20,
-    shadowColor: '#000000',
-    shadowOffset: {
-      width: 0,
-      height: 4,
-    },
-    shadowOpacity: 0.08,
-    shadowRadius: 12,
-    elevation: 8,
-    borderWidth: 1,
-    borderColor: '#E2E8F0',
-  },
-  formContainer: {
-    paddingHorizontal: 20,
-    paddingVertical: 24,
+  logoContainer: {
+    marginBottom: designTokens.spacing.lg,
   },
   welcomeTitle: {
-    fontSize: 22,
+    fontSize: designTokens.typography.sizes.xxl,
     fontWeight: designTokens.typography.weights.bold,
     color: designTokens.colors.text.primary,
-    marginBottom: 6,
-    marginTop: 8,
+    marginBottom: designTokens.spacing.xs,
+    textAlign: 'left', // RTL compliance: 'left' shows on visual right in RTL mode
   },
   welcomeSubtitle: {
-    fontSize: 15,
+    fontSize: designTokens.typography.sizes.md,
     color: designTokens.colors.text.secondary,
-    marginBottom: 20,
+    textAlign: 'left', // RTL compliance
+  },
+  
+  // Form card - clean white card
+  formCard: {
+    backgroundColor: designTokens.colors.background.elevated,
+    borderRadius: designTokens.borderRadius.xl,
+    padding: designTokens.spacing.xxl,
+    marginBottom: designTokens.spacing.xl,
+    ...designTokens.shadows.sm,
   },
   form: {
-    gap: 20,
+    gap: designTokens.spacing.lg,
+  },
+  
+  // Input styling - clean and modern
+  inputGroup: {
+    gap: designTokens.spacing.xs,
   },
   inputContainer: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: '#E2E8F0',
-    paddingHorizontal: 16,
-    paddingVertical: 4,
     flexDirection: 'row',
     alignItems: 'center',
-    minHeight: 50,
+    backgroundColor: designTokens.colors.background.primary,
+    borderWidth: 1,
+    borderColor: designTokens.colors.border.light,
+    borderRadius: designTokens.borderRadius.md,
+    paddingHorizontal: designTokens.spacing.md,
+    paddingVertical: designTokens.spacing.sm,
+    minHeight: 52,
+  },
+  inputContainerError: {
+    borderColor: designTokens.colors.error[500],
+    backgroundColor: designTokens.colors.error[50],
+  },
+  inputIcon: {
+    marginRight: designTokens.spacing.sm,
   },
   textInput: {
     flex: 1,
-    fontSize: 16,
-    color: '#1E293B',
-    textAlign: 'right',
-    paddingVertical: 12,
+    fontSize: designTokens.typography.sizes.md,
+    color: designTokens.colors.text.primary,
+    textAlign: 'left', // RTL compliance: shows text on visual right
+    paddingVertical: designTokens.spacing.sm,
   },
-  leftIcon: {
-    marginRight: 12,
+  textInputError: {
+    color: designTokens.colors.error[700],
   },
-  toggleButton: {
-    padding: 8,
+  passwordToggle: {
+    padding: designTokens.spacing.xs,
+    marginLeft: designTokens.spacing.xs,
   },
-  passwordContainer: {
-    position: 'relative',
+  
+  // Options row - remember me and forgot password
+  optionsRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginTop: designTokens.spacing.xs,
   },
-  formActions: {
-    gap: 10,
-    marginTop: 6,
-  },
-  loadingContent: {
+  rememberMe: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: designTokens.spacing.sm,
   },
-  loadingText: {
-    color: designTokens.colors.text.inverse,
-    fontSize: designTokens.typography.sizes.md,
+  rememberMeText: {
+    fontSize: designTokens.typography.sizes.sm,
+    color: designTokens.colors.text.secondary,
     fontWeight: designTokens.typography.weights.medium,
+    textAlign: 'left', // RTL compliance
+  },
+  forgotPassword: {
+    padding: designTokens.spacing.xs,
+  },
+  forgotPasswordText: {
+    fontSize: designTokens.typography.sizes.sm,
+    color: designTokens.colors.primary[600],
+    fontWeight: designTokens.typography.weights.medium,
+    textAlign: 'left', // RTL compliance
+  },
+  
+  // Error handling
+  errorText: {
+    fontSize: designTokens.typography.sizes.xs,
+    color: designTokens.colors.error[600],
+    marginTop: designTokens.spacing.xs,
+    marginRight: designTokens.spacing.lg,
+    textAlign: 'left', // RTL compliance: error text aligned to visual right
+  },
+  errorContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: designTokens.colors.error[50],
+    borderRadius: designTokens.borderRadius.sm,
+    paddingHorizontal: designTokens.spacing.md,
+    paddingVertical: designTokens.spacing.sm,
+    gap: designTokens.spacing.sm,
+  },
+  generalErrorText: {
+    fontSize: designTokens.typography.sizes.sm,
+    color: designTokens.colors.error[600],
+    textAlign: 'left', // RTL compliance
+  },
+  
+  // Buttons
+  loginButton: {
+    marginTop: designTokens.spacing.md,
+    height: 52,
+    borderRadius: designTokens.borderRadius.md,
+  },
+  biometricButton: {
+    height: 48,
+    borderRadius: designTokens.borderRadius.md,
+    borderColor: designTokens.colors.primary[300],
   },
   buttonContent: {
     flexDirection: 'row',
@@ -710,166 +606,81 @@ const styles = StyleSheet.create({
     gap: designTokens.spacing.sm,
   },
   buttonText: {
-    color: designTokens.colors.text.inverse,
     fontSize: designTokens.typography.sizes.md,
     fontWeight: designTokens.typography.weights.semibold,
+    color: designTokens.colors.text.inverse,
+    textAlign: 'left', // RTL compliance
   },
-  errorContainer: {
-    backgroundColor: designTokens.colors.error[50],
-    padding: designTokens.spacing.md,
-    borderRadius: designTokens.borderRadius.lg,
-    borderWidth: 1,
-    borderColor: designTokens.colors.error[200],
-    marginVertical: designTokens.spacing.xs,
-    shadowColor: designTokens.colors.error[500],
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 2,
-  },
-  errorText: {
-    color: designTokens.colors.error[600],
+  biometricButtonText: {
     fontSize: designTokens.typography.sizes.sm,
-    textAlign: 'center',
-  },
-  forgotPassword: {
-    alignSelf: 'flex-end',
-    marginBottom: designTokens.spacing.sm,
-  },
-  forgotPasswordText: {
+    fontWeight: designTokens.typography.weights.semibold,
     color: designTokens.colors.primary[600],
-    fontSize: designTokens.typography.sizes.sm,
-    fontWeight: designTokens.typography.weights.medium,
+    textAlign: 'left', // RTL compliance
   },
-  loginButton: {
-    marginTop: 6,
-    height: 48,
-    borderRadius: 12,
-  },
+  
+  // Social login section - simplified
   socialSection: {
-    marginTop: 16,
+    gap: designTokens.spacing.md,
   },
   dividerContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 8,
+    gap: designTokens.spacing.md,
   },
   divider: {
     flex: 1,
     height: 1,
-    backgroundColor: '#E2E8F0',
+    backgroundColor: designTokens.colors.border.light,
   },
   dividerText: {
-    marginHorizontal: designTokens.spacing.md,
-    color: '#64748B',
-    fontSize: 14,
-    fontWeight: '500',
+    fontSize: designTokens.typography.sizes.sm,
+    color: designTokens.colors.text.tertiary,
+    fontWeight: designTokens.typography.weights.medium,
+    textAlign: 'left', // RTL compliance
   },
-  socialButtonsContainer: {
+  socialButtons: {
     flexDirection: 'row',
-    gap: 12,
+    gap: designTokens.spacing.md,
   },
   socialButton: {
-    flex: 1,
-    height: 44,
-    borderRadius: 10,
-    borderWidth: 1,
-    borderColor: '#E2E8F0',
-    backgroundColor: '#FFFFFF',
-    shadowColor: '#000000',
-    shadowOffset: {
-      width: 0,
-      height: 1,
-    },
-    shadowOpacity: 0.05,
-    shadowRadius: 2,
-    elevation: 1,
-  },
-  socialButtonInner: {
     flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 8,
-    height: '100%',
+    gap: designTokens.spacing.xs,
+    backgroundColor: designTokens.colors.background.primary,
+    borderWidth: 1,
+    borderColor: designTokens.colors.border.light,
+    borderRadius: designTokens.borderRadius.md,
+    paddingVertical: designTokens.spacing.md,
+    paddingHorizontal: designTokens.spacing.sm,
+    height: 48,
   },
   socialButtonText: {
-    fontSize: 15,
-    fontWeight: '600',
-    color: '#1E293B',
+    fontSize: designTokens.typography.sizes.sm,
+    fontWeight: designTokens.typography.weights.semibold,
+    color: designTokens.colors.text.primary,
+    textAlign: 'left', // RTL compliance
   },
+  
+  // Signup section
   signupSection: {
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
-    marginTop: 16,
-    gap: 4,
+    gap: designTokens.spacing.xs,
+    marginTop: designTokens.spacing.lg,
   },
   signupText: {
-    color: '#64748B',
-    fontSize: 15,
-    fontWeight: '400',
+    fontSize: designTokens.typography.sizes.md,
+    color: designTokens.colors.text.secondary,
+    textAlign: 'left', // RTL compliance
   },
   signupLink: {
+    fontSize: designTokens.typography.sizes.md,
     color: designTokens.colors.primary[600],
-    fontSize: 15,
-    fontWeight: '600',
-  },
-  inputError: {
-    borderColor: designTokens.colors.error[500],
-    borderWidth: 1.5,
-    backgroundColor: designTokens.colors.error[50],
-  },
-  textInputError: {
-    color: designTokens.colors.error[700],
-  },
-  inputErrorText: {
-    color: designTokens.colors.error[600],
-    fontSize: 12,
-    marginTop: 4,
-    marginLeft: 16,
-  },
-  rememberMeContainer: {
-    marginTop: 8,
-  },
-  rememberMeContent: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 4,
-  },
-  rememberMeText: {
-    fontSize: 14,
-    color: designTokens.colors.text.secondary,
-    fontWeight: '500',
-  },
-  biometricContainer: {
-    marginTop: 16,
-  },
-  biometricDivider: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 12,
-  },
-  biometricDividerText: {
-    marginHorizontal: 12,
-    color: '#64748B',
-    fontSize: 12,
-    fontWeight: '500',
-  },
-  biometricButton: {
-    height: 44,
-    borderRadius: 12,
-    borderColor: designTokens.colors.primary[300],
-    borderWidth: 1.5,
-  },
-  biometricButtonText: {
-    color: designTokens.colors.primary[600],
-    fontSize: 14,
-    fontWeight: '600',
+    fontWeight: designTokens.typography.weights.semibold,
+    textAlign: 'left', // RTL compliance
   },
 });
 

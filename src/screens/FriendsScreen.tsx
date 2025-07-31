@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { View, SafeAreaView, StyleSheet, ScrollView, TouchableOpacity, Alert } from 'react-native';
+import React, { useState, useEffect, useMemo } from 'react';
+import { View, SafeAreaView, StyleSheet, ScrollView, TouchableOpacity, Alert, TextInput, FlatList } from 'react-native';
 import { WoltButton } from '@components/design-system/WoltButton';
 import { RTLText } from '@components/design-system/RTLText';
 import { Input, LoadingSpinner } from '@components/design-system';
@@ -9,30 +9,199 @@ import { fetchUserFriends, inviteFriend } from '@services/mockApi';
 import { Friend } from '@types/types';
 import { Ionicons } from '@expo/vector-icons';
 
+// Enhanced Friend interface with social features
+interface EnhancedFriend extends Friend {
+  status: 'online' | 'playing' | 'available' | 'offline';
+  currentActivity?: string;
+  currentField?: string;
+  mutualGames?: number;
+  joinedGroups?: string[];
+}
+
+interface Group {
+  id: string;
+  name: string;
+  description: string;
+  members: string[];
+  adminId: string;
+  sport: string;
+  regularTimes: string[];
+  imageUrl?: string;
+  isPublic: boolean;
+}
+
+interface ChatMessage {
+  id: string;
+  senderId: string;
+  senderName: string;
+  message: string;
+  timestamp: string;
+  isRead: boolean;
+}
+
+interface ChatConversation {
+  id: string;
+  name: string;
+  type: 'friend' | 'group';
+  lastMessage?: ChatMessage;
+  unreadCount: number;
+  participants: string[];
+}
+
+type TabType = 'friends' | 'groups' | 'chat';
+
 const FriendsScreen: React.FC = () => {
-  const [friends, setFriends] = useState<Friend[]>([]);
+  // State management
+  const [activeTab, setActiveTab] = useState<TabType>('friends');
+  const [friends, setFriends] = useState<EnhancedFriend[]>([]);
+  const [groups, setGroups] = useState<Group[]>([]);
+  const [conversations, setConversations] = useState<ChatConversation[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [isInviting, setIsInviting] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
   const [showInviteForm, setShowInviteForm] = useState(false);
   const [phoneNumber, setPhoneNumber] = useState('');
+  const [isInviting, setIsInviting] = useState(false);
   const [error, setError] = useState('');
 
   useEffect(() => {
-    loadFriends();
+    loadAllData();
   }, []);
 
-  const loadFriends = async () => {
+  const loadAllData = async () => {
     try {
       setIsLoading(true);
-      const response = await fetchUserFriends('user_1');
-      if (response.success) {
-        setFriends(response.data || []);
-      }
+      await Promise.all([
+        loadFriends(),
+        loadGroups(),
+        loadConversations()
+      ]);
     } catch (error) {
-      console.error('Error loading friends:', error);
+      console.error('Error loading data:', error);
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const loadFriends = async () => {
+    // Enhanced mock data with social features
+    const mockFriends: EnhancedFriend[] = [
+      {
+        id: '1',
+        fullName: 'דני כהן',
+        phoneNumber: '050-1234567',
+        favoriteSpots: ['מגרש הכוכבים'],
+        isOnline: true,
+        status: 'playing',
+        currentActivity: 'משחק כדורגל',
+        currentField: 'מגרש הכוכבים',
+        mutualGames: 12,
+        joinedGroups: ['football_tlv', 'weekend_warriors']
+      },
+      {
+        id: '2',
+        fullName: 'שרה לוי',
+        phoneNumber: '052-9876543',
+        favoriteSpots: ['מגרש הספורט'],
+        isOnline: true,
+        status: 'online',
+        mutualGames: 8,
+        joinedGroups: ['tennis_lovers']
+      },
+      {
+        id: '3',
+        fullName: 'מיכאל רוזן',
+        phoneNumber: '054-5555555',
+        favoriteSpots: ['מגרש המרכז'],
+        isOnline: false,
+        status: 'offline',
+        lastActive: '2 שעות',
+        mutualGames: 15,
+        joinedGroups: ['basketball_pros', 'weekend_warriors']
+      },
+      {
+        id: '4',
+        fullName: 'רחל אברהם',
+        phoneNumber: '053-7777777',
+        favoriteSpots: ['מגרש הקהילה'],
+        isOnline: true,
+        status: 'available',
+        mutualGames: 6,
+        joinedGroups: ['volleyball_team']
+      }
+    ];
+    setFriends(mockFriends);
+  };
+
+  const loadGroups = async () => {
+    const mockGroups: Group[] = [
+      {
+        id: 'football_tlv',
+        name: 'כדורגל תל אביב',
+        description: 'קבוצת כדורגל קבועה בתל אביב - כל יום שלישי ב-19:00',
+        members: ['1', '3', 'user_1'],
+        adminId: 'user_1',
+        sport: 'כדורגל',
+        regularTimes: ['יום שלישי 19:00', 'יום ראשון 20:00'],
+        isPublic: true
+      },
+      {
+        id: 'tennis_lovers',
+        name: 'אוהבי טניס',
+        description: 'משחקי טניס בסופי שבוע',
+        members: ['2', 'user_1'],
+        adminId: '2',
+        sport: 'טניס',
+        regularTimes: ['שבת 10:00', 'ראשון 18:00'],
+        isPublic: false
+      },
+      {
+        id: 'weekend_warriors',
+        name: 'לוחמי סוף השבוע',
+        description: 'ספורט בסוף השבוע - כל הספורטים',
+        members: ['1', '3', 'user_1'],
+        adminId: '3',
+        sport: 'מעורב',
+        regularTimes: ['שבת 9:00', 'ראשון 17:00'],
+        isPublic: true
+      }
+    ];
+    setGroups(mockGroups);
+  };
+
+  const loadConversations = async () => {
+    const mockConversations: ChatConversation[] = [
+      {
+        id: 'conv_1',
+        name: 'דני כהן',
+        type: 'friend',
+        lastMessage: {
+          id: 'msg_1',
+          senderId: '1',
+          senderName: 'דני כהן',
+          message: 'בא לכדורגל מחר?',
+          timestamp: '14:30',
+          isRead: false
+        },
+        unreadCount: 2,
+        participants: ['1', 'user_1']
+      },
+      {
+        id: 'conv_2',
+        name: 'כדורגל תל אביב',
+        type: 'group',
+        lastMessage: {
+          id: 'msg_2',
+          senderId: '3',
+          senderName: 'מיכאל רוזן',
+          message: 'מי בא היום למשחק?',
+          timestamp: '12:15',
+          isRead: true
+        },
+        unreadCount: 0,
+        participants: ['1', '3', 'user_1']
+      }
+    ];
+    setConversations(mockConversations);
   };
 
   const handleInviteFriend = async () => {

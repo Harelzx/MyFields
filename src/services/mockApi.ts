@@ -18,7 +18,7 @@ import {
   Game,
   SearchFilters,
   ApiResponse 
-} from '@types/types';
+} from '../types/types';
 
 // Utility function to simulate API delay
 const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));

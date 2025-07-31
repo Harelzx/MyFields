@@ -108,11 +108,55 @@ export interface Game {
 export interface WalletTransaction {
   id: string;
   userId: string;
-  type: 'credit' | 'debit';
+  type: 'booking_payment' | 'wallet_charge' | 'refund' | 'transfer_in' | 'transfer_out' | 'penalty' | 'bonus';
   amount: number;
   description: string;
+  category: 'sports' | 'deposit' | 'refund' | 'transfer' | 'fee' | 'reward';
+  status: 'pending' | 'completed' | 'failed' | 'cancelled';
   relatedBookingId?: string;
+  relatedFieldId?: string;
+  relatedUserId?: string; // For transfers
+  paymentMethod?: 'credit_card' | 'bank_transfer' | 'paypal' | 'apple_pay' | 'google_pay';
+  receiptUrl?: string;
+  metadata?: {
+    fieldName?: string;
+    sportType?: string;
+    duration?: number;
+    participants?: string[];
+  };
   createdAt: string;
+  updatedAt?: string;
+}
+
+export interface WalletBalance {
+  current: number;
+  pending: number;
+  available: number;
+  lastUpdated: string;
+}
+
+export interface SpendingInsights {
+  currentMonth: {
+    totalSpent: number;
+    totalDeposited: number;
+    transactionCount: number;
+    topCategory: string;
+    compared_to_last_month: {
+      spent_change: number;
+      deposited_change: number;
+    };
+  };
+  categories: {
+    [category: string]: {
+      amount: number;
+      count: number;
+      percentage: number;
+    };
+  };
+  trends: {
+    weekly: number[];
+    monthly: number[];
+  };
 }
 
 // ===== Search Types =====

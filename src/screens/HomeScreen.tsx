@@ -19,19 +19,25 @@ import {
   AvatarGroup,
   AvatarFallbackText,
 } from '@gluestack-ui/themed';
-import { RefreshControl, Dimensions } from 'react-native';
+import { RefreshControl, Dimensions, TouchableWithoutFeedback, Modal, PanResponder } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
   withSpring,
   withTiming,
+  withDelay,
   FadeInDown,
   FadeInRight,
   FadeInUp,
+  runOnJS,
+  SlideInDown,
+  SlideOutUp,
+  FadeIn,
+  FadeOut,
 } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
-import { UserProfileDropdownGS } from '@components/design-system/UserProfileDropdownGS';
 import { ThemeStatusBar } from '@components/design-system/ThemeStatusBar';
 import { useTheme } from '@contexts/ThemeContext';
 import { texts } from '@constants/hebrewTexts';
@@ -53,14 +59,22 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
   const [fields, setFields] = useState<Field[]>([]);
   const [games, setGames] = useState<Game[]>([]);
   const [currentUser] = useState('דניאל כהן');
-  const [showProfileDropdown, setShowProfileDropdown] = useState(false);
   const [recommendations, setRecommendations] = useState<(Game | Field)[]>([]);
   const [hasMoreFields, setHasMoreFields] = useState(true);
   const [hasMoreGames, setHasMoreGames] = useState(true);
   const [fieldsPage, setFieldsPage] = useState(1);
   const [gamesPage, setGamesPage] = useState(1);
+  
+  // Profile dropdown state
+  const [isDropdownVisible, setIsDropdownVisible] = useState(false);
+  const [dropdownPosition, setDropdownPosition] = useState({ top: 0, right: 0 });
+  const profileButtonRef = useRef<any>(null);
+  
+  // Animation values for dropdown
   const dropdownOpacity = useSharedValue(0);
   const dropdownScale = useSharedValue(0.8);
+  const dropdownTranslateY = useSharedValue(-10);
+  const dropdownTimeout = useRef<NodeJS.Timeout | null>(null);
 
   // Load data on component mount
   useEffect(() => {
@@ -161,73 +175,378 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
     }
   };
 
-  const handleProfilePress = () => {
-    console.log('Profile button pressed, current state:', showProfileDropdown);
-    console.log('About to toggle dropdown');
+
+  // Profile dropdown handlers
+  const measureProfileButton = () => {
+    if (profileButtonRef.current) {
+      profileButtonRef.current.measure((x: number, y: number, width: number, height: number, pageX: number, pageY: number) => {
+        const isRTL = I18nManager.isRTL;
+        setDropdownPosition({
+          top: pageY + height + 8, // 8px gap below button
+          right: isRTL ? screenWidth - pageX - width : pageX, // RTL positioning
+        });
+      });
+    }
+  };
+
+  const showDropdown = () => {
+    measureProfileButton();
+    setIsDropdownVisible(true);
     
-    if (showProfileDropdown) {
-      console.log('Closing dropdown');
-      setShowProfileDropdown(false);
-    } else {
-      console.log('Opening dropdown');
-      setShowProfileDropdown(true);
+    // Animate dropdown appearance
+    dropdownOpacity.value = withTiming(1, { duration: 200 });
+    dropdownScale.value = withSpring(1, { 
+      damping: 15, 
+      stiffness: 300,
+      mass: 0.8 
+    });
+    dropdownTranslateY.value = withSpring(0, { 
+      damping: 15, 
+      stiffness: 300 
+    });
+
+    // Auto-hide after 4 seconds
+    if (dropdownTimeout.current) {
+      clearTimeout(dropdownTimeout.current);
+    }
+    dropdownTimeout.current = setTimeout(() => {
+      hideDropdown();
+    }, 4000);
+  };
+
+  const hideDropdown = () => {
+    // Animate dropdown disappearance
+    dropdownOpacity.value = withTiming(0, { duration: 150 });
+    dropdownScale.value = withTiming(0.9, { duration: 150 });
+    dropdownTranslateY.value = withTiming(-10, { duration: 150 });
+    
+    setTimeout(() => {
+      setIsDropdownVisible(false);
+    }, 150);
+
+    if (dropdownTimeout.current) {
+      clearTimeout(dropdownTimeout.current);
+      dropdownTimeout.current = null;
+    }
+  };
+
+  const openDropdown = () => {
+    if (profileButtonRef.current) {
+      profileButtonRef.current.measure((x: number, y: number, width: number, height: number, pageX: number, pageY: number) => {
+        const isRTL = I18nManager.isRTL;
+        setDropdownPosition({
+          top: pageY + height + 8,
+          right: isRTL ? screenWidth - pageX - width : pageX,
+        });
+        setIsDropdownVisible(true);
+        showDropdown();
+        
+        // Auto-dismiss after 4 seconds
+        dropdownTimeout.current = setTimeout(() => {
+          hideDropdown();
+        }, 4000);
+      });
     }
   };
 
   const handleProfileMenuPress = () => {
-    console.log('Profile menu pressed');
-    setTimeout(() => {
-      setShowProfileDropdown(false);
-    }, 100);
+    if (isDropdownVisible) {
+      hideDropdown();
+    } else {
+      openDropdown();
+    }
+  };
+
+  const handleProfileNavigation = () => {
+    hideDropdown();
+    navigation.navigate('Profile');
   };
 
   const handleSettingsPress = () => {
-    console.log('Settings pressed');
-    setTimeout(() => {
-      setShowProfileDropdown(false);
-    }, 100);
+    hideDropdown();
+    navigation.navigate('Settings');
   };
 
-  const handleLogoutPress = () => {
+  const handleLogout = () => {
+    hideDropdown();
+    // Add logout logic here
     console.log('Logout pressed');
-    setTimeout(() => {
-      setShowProfileDropdown(false);
-    }, 100);
   };
 
-  // Handle dropdown animation
+  // Clean up timeout on unmount
   useEffect(() => {
-    console.log('showProfileDropdown state changed to:', showProfileDropdown);
-    if (showProfileDropdown) {
-      dropdownOpacity.value = withTiming(1, { duration: 200 });
-      dropdownScale.value = withSpring(1, { damping: 15, stiffness: 300 });
-    } else {
-      dropdownOpacity.value = withTiming(0, { duration: 150 });
-      dropdownScale.value = withTiming(0.8, { duration: 150 });
-    }
-  }, [showProfileDropdown]);
+    return () => {
+      if (dropdownTimeout.current) {
+        clearTimeout(dropdownTimeout.current);
+      }
+    };
+  }, []);
 
-  // Animated style for dropdown
-  const dropdownAnimatedStyle = useAnimatedStyle(() => ({
-    opacity: dropdownOpacity.value,
-    transform: [{ scale: dropdownScale.value }],
-  }));
 
-  // Auto-close dropdown after 5 seconds
-  useEffect(() => {
-    if (showProfileDropdown) {
-      console.log('Setting up auto-close timer');
-      const timer = setTimeout(() => {
-        console.log('Auto-closing dropdown after timeout');
-        setShowProfileDropdown(false);
-      }, 5000);
-      
-      return () => {
-        console.log('Clearing auto-close timer');
-        clearTimeout(timer);
-      };
+
+
+
+  // Profile Dropdown Component
+  const ProfileDropdown = () => {
+    const dropdownAnimatedStyle = useAnimatedStyle(() => ({
+      opacity: dropdownOpacity.value,
+      transform: [
+        { scale: dropdownScale.value },
+        { translateY: dropdownTranslateY.value }
+      ],
+    }));
+
+    const menuItems = [
+      {
+        icon: 'person-outline',
+        label: 'פרופיל',
+        onPress: handleProfileNavigation,
+        color: '#3b82f6'
+      },
+      {
+        icon: 'settings-outline',
+        label: texts.settings.title,
+        onPress: handleSettingsPress,
+        color: '#6b7280'
+      },
+      {
+        icon: 'log-out-outline',
+        label: texts.auth.logout,
+        onPress: handleLogout,
+        color: '#ef4444'
+      }
+    ];
+
+    if (!isDropdownVisible) return null;
+
+    return (
+      <Modal
+        transparent
+        visible={isDropdownVisible}
+        animationType="none"
+        onRequestClose={hideDropdown}
+      >
+        <TouchableWithoutFeedback onPress={hideDropdown}>
+          <Box flex={1}>
+            <Animated.View
+              style={[
+                dropdownAnimatedStyle,
+                {
+                  position: 'absolute',
+                  top: dropdownPosition.top,
+                  right: dropdownPosition.right,
+                  zIndex: 1000,
+                }
+              ]}
+            >
+              <Box
+                bg="$backgroundLight0"
+                $dark={{bg: "$backgroundDark800"}}
+                borderRadius="$xl"
+                borderWidth="$1"
+                borderColor="$borderLight200"
+                $dark={{borderColor: "$borderDark700"}}
+                shadowColor="$shadowLight300"
+                shadowOffset={{ width: 0, height: 8 }}
+                shadowOpacity={0.25}
+                shadowRadius={16}
+                elevation={12}
+                minWidth={220}
+                overflow="hidden"
+              >
+                {/* Dropdown Header */}
+                <Box
+                  bg="$primary50"
+                  $dark={{bg: "$primary900"}}
+                  p="$4"
+                  borderBottomWidth="$1"
+                  borderBottomColor="$borderLight200"
+                  $dark={{borderBottomColor: "$borderDark700"}}
+                >
+                  <HStack space="sm" alignItems="center">
+                    <Box
+                      bg="$primary500"
+                      borderRadius="$full"
+                      width={32}
+                      height={32}
+                      alignItems="center"
+                      justifyContent="center"
+                    >
+                      <Text color="white" fontSize="$sm" fontWeight="$bold">
+                        {currentUser.charAt(0)}
+                      </Text>
+                    </Box>
+                    <VStack space="xs" alignItems="flex-start" flex={1}>
+                      <Text 
+                        fontSize="$sm" 
+                        fontWeight="$bold" 
+                        color="$textLight900"
+                        $dark={{color: "$textDark50"}}
+                        textAlign="left"
+                        numberOfLines={1}
+                      >
+                        {currentUser}
+                      </Text>
+                      <Text 
+                        fontSize="$xs" 
+                        color="$textLight600"
+                        $dark={{color: "$textDark400"}}
+                        textAlign="left"
+                      >
+                        חבר פעיל
+                      </Text>
+                    </VStack>
+                  </HStack>
+                </Box>
+
+                {/* Menu Items */}
+                <VStack space="xs" p="$2">
+                  {menuItems.map((item, index) => (
+                    <Pressable
+                      key={index}
+                      onPress={item.onPress}
+                      borderRadius="$lg"
+                      p="$3"
+                      $pressed={{
+                        bg: '$backgroundLight100',
+                        transform: [{ scale: 0.98 }],
+                      }}
+                      $hover={{
+                        bg: '$backgroundLight50',
+                      }}
+                    >
+                      <HStack space="md" alignItems="center">
+                        <Box
+                          bg={`${item.color}15`}
+                          borderRadius="$full"
+                          p="$2"
+                          width={36}
+                          height={36}
+                          alignItems="center"
+                          justifyContent="center"
+                        >
+                          <Ionicons 
+                            name={item.icon as keyof typeof Ionicons.glyphMap} 
+                            size={18} 
+                            color={item.color} 
+                          />
+                        </Box>
+                        <Text
+                          fontSize="$sm"
+                          fontWeight="$medium"
+                          color="$textLight900"
+                          $dark={{color: "$textDark50"}}
+                          textAlign="left"
+                          flex={1}
+                        >
+                          {item.label}
+                        </Text>
+                        <Ionicons 
+                          name="chevron-back" 
+                          size={16} 
+                          color={theme.colors.text.secondary}
+                        />
+                      </HStack>
+                    </Pressable>
+                  ))}
+                </VStack>
+
+                {/* Dropdown Footer with app version */}
+                <Box
+                  bg="$backgroundLight50"
+                  $dark={{bg: "$backgroundDark900"}}
+                  p="$3"
+                  borderTopWidth="$1"
+                  borderTopColor="$borderLight200"
+                  $dark={{borderTopColor: "$borderDark700"}}
+                >
+                  <Text
+                    fontSize="$xs"
+                    color="$textLight500"
+                    $dark={{color: "$textDark500"}}
+                    textAlign="center"
+                  >
+                    MyFields v1.0.0
+                  </Text>
+                </Box>
+              </Box>
+            </Animated.View>
+          </Box>
+        </TouchableWithoutFeedback>
+      </Modal>
+    );
+  };
+
+  // Notification carousel data
+  const notificationCards = [
+    {
+      id: 1,
+      type: 'upcoming_game',
+      title: 'המשחק הבא שלך',
+      subtitle: 'כדורגל • היום 18:00',
+      location: 'מגרש הכוכבים',
+      icon: 'football',
+      gradient: ['#667eea', '#764ba2'],
+      actions: [
+        { label: 'ניווט', icon: 'navigate', type: 'primary' },
+        { label: 'פרטים', icon: 'information-circle', type: 'secondary' }
+      ]
+    },
+    {
+      id: 2,
+      type: 'game_approval',
+      title: 'אישור להצטרפות למשחק',
+      subtitle: 'טניס • מחר 16:30',
+      location: 'מועדון הטניס המרכזי',
+      icon: 'tennisball',
+      gradient: ['#f093fb', '#f5576c'],
+      actions: [
+        { label: 'אישור', icon: 'checkmark-circle', type: 'success' },
+        { label: 'דחיה', icon: 'close-circle', type: 'danger' }
+      ]
+    },
+    {
+      id: 3,
+      type: 'friend_request',
+      title: 'בקשת חברות חדשה',
+      subtitle: 'מיכאל כהן רוצה להתחבר אליך',
+      location: 'משחק משותף: כדורסל',
+      icon: 'person-add',
+      gradient: ['#4facfe', '#00f2fe'],
+      actions: [
+        { label: 'קבלה', icon: 'person-add', type: 'success' },
+        { label: 'התעלמות', icon: 'person-remove', type: 'secondary' }
+      ]
+    },
+    {
+      id: 4,
+      type: 'field_confirmation',
+      title: 'אישור הזמנת מגרש',
+      subtitle: 'פדל • יום ראשון 20:00',
+      location: 'מועדון הפדל הירוק',
+      icon: 'checkmark-done-circle',
+      gradient: ['#43e97b', '#38f9d7'],
+      actions: [
+        { label: 'אישור', icon: 'checkmark', type: 'success' },
+        { label: 'עריכה', icon: 'create', type: 'warning' }
+      ]
+    },
+    {
+      id: 5,
+      type: 'game_reminder',
+      title: 'תזכורת למשחק מחר',
+      subtitle: 'כדורעף • מחר 19:00',
+      location: 'מתחם הספורט הלאומי',
+      icon: 'alarm',
+      gradient: ['#fa709a', '#fee140'],
+      actions: [
+        { label: 'מוכן', icon: 'thumbs-up', type: 'primary' },
+        { label: 'ביטול', icon: 'close', type: 'danger' }
+      ]
     }
-  }, [showProfileDropdown]);
+  ];
+
+  const [currentCardIndex, setCurrentCardIndex] = useState(0);
 
   // Enhanced sports images with better quality and relevance
   const getSportImage = (sportType: string) => {
@@ -355,6 +674,235 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
           </Box>
         </Pressable>
       </Animated.View>
+    );
+  };
+
+  // Notification Carousel Component - Simplified
+  const NotificationCarousel = () => {
+    const currentCard = notificationCards[currentCardIndex];
+
+    const getButtonStyles = (type: string) => {
+      const styles = {
+        primary: { bg: 'white', textColor: currentCard.gradient[0] },
+        secondary: { bg: 'rgba(255,255,255,0.2)', textColor: 'white' },
+        success: { bg: 'white', textColor: '#10b981' },
+        danger: { bg: 'white', textColor: '#ef4444' },
+        warning: { bg: 'white', textColor: '#f59e0b' }
+      };
+      return styles[type as keyof typeof styles] || styles.primary;
+    };
+
+    const nextCard = () => {
+      setCurrentCardIndex((prev) => (prev + 1) % notificationCards.length);
+    };
+
+    const prevCard = () => {
+      setCurrentCardIndex((prev) => (prev - 1 + notificationCards.length) % notificationCards.length);
+    };
+
+    // Enhanced full-width touch detection system
+    const fullWidthPanResponder = PanResponder.create({
+      onStartShouldSetPanResponder: () => true,
+      onMoveShouldSetPanResponder: (evt, gestureState) => {
+        // More permissive gesture detection for full-width area
+        const isHorizontal = Math.abs(gestureState.dx) > Math.abs(gestureState.dy);
+        const hasMinimumMovement = Math.abs(gestureState.dx) > 10; // Lower threshold
+        
+        console.log('Gesture check:', { 
+          dx: gestureState.dx, 
+          dy: gestureState.dy, 
+          isHorizontal, 
+          hasMinimumMovement 
+        });
+        
+        return isHorizontal && hasMinimumMovement;
+      },
+      
+      onPanResponderGrant: (evt, gestureState) => {
+        console.log('Touch granted at:', evt.nativeEvent.locationX, evt.nativeEvent.locationY);
+      },
+      
+      onPanResponderMove: (evt, gestureState) => {
+        // Real-time feedback during gesture
+        const progress = Math.min(Math.abs(gestureState.dx) / (screenWidth * 0.25), 1);
+        console.log('Gesture progress:', progress, 'dx:', gestureState.dx);
+      },
+      
+      onPanResponderRelease: (evt, gestureState) => {
+        console.log('Gesture released:', { 
+          dx: gestureState.dx, 
+          vx: gestureState.vx,
+          screenWidth: screenWidth 
+        });
+        
+        // More sensitive thresholds for better detection
+        const swipeThreshold = 50; // Fixed 50px threshold
+        const velocityThreshold = 300; // Lower velocity threshold
+        
+        const shouldSwipe = Math.abs(gestureState.dx) > swipeThreshold || 
+                           Math.abs(gestureState.vx) > velocityThreshold;
+        
+        console.log('Should swipe:', shouldSwipe);
+        
+        if (shouldSwipe) {
+          const isRTL = I18nManager.isRTL;
+          console.log('RTL mode:', isRTL);
+          
+          if (gestureState.dx > 0) {
+            // Swipe right
+            console.log('Swipe right detected');
+            if (isRTL) {
+              console.log('RTL: Going to previous card');
+              prevCard();
+            } else {
+              console.log('LTR: Going to next card');
+              nextCard();
+            }
+          } else {
+            // Swipe left
+            console.log('Swipe left detected');
+            if (isRTL) {
+              console.log('RTL: Going to next card');
+              nextCard();
+            } else {
+              console.log('LTR: Going to previous card');
+              prevCard();
+            }
+          }
+        }
+      },
+      
+      onPanResponderTerminationRequest: () => false, // Don't allow termination
+      onShouldBlockNativeResponder: () => false, // Allow native components to respond
+    });
+
+    return (
+      <Box position="relative" width="100%" minHeight={200}>
+        {/* Debug info */}
+        {__DEV__ && (
+          <Box position="absolute" top={-30} left={0} zIndex={100} bg="rgba(255,0,0,0.3)" p="$1">
+            <Text fontSize="$xs" color="white">
+              Card {currentCardIndex + 1}/{notificationCards.length} | Screen: {screenWidth}px
+            </Text>
+          </Box>
+        )}
+        
+        {/* Carousel content */}
+        <Box position="relative" zIndex={2}>
+          <LinearGradient
+            colors={currentCard.gradient}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+            style={{
+              borderRadius: 20,
+              padding: 20,
+              minHeight: 160,
+            }}
+          >
+          {/* Background pattern */}
+          <Box 
+            position="absolute" 
+            top={-20} 
+            right={-20} 
+            width={100} 
+            height={100} 
+            borderRadius={50} 
+            bg="rgba(255,255,255,0.08)" 
+          />
+          
+          <VStack space="md" position="relative">
+            <HStack justifyContent="space-between" alignItems="flex-start">
+              <VStack space="xs" alignItems="flex-start" flex={1}>
+                <Text fontSize="$sm" color="rgba(255,255,255,0.8)" fontWeight="$medium">
+                  {currentCard.title}
+                </Text>
+                <Heading size="lg" color="white" fontWeight="$bold" numberOfLines={1}>
+                  {currentCard.subtitle}
+                </Heading>
+                <HStack space="xs" alignItems="center">
+                  <Ionicons name="location" size={16} color="rgba(255,255,255,0.8)" />
+                  <Text fontSize="$md" color="rgba(255,255,255,0.9)" fontWeight="$medium" numberOfLines={1} flex={1}>
+                    {currentCard.location}
+                  </Text>
+                </HStack>
+              </VStack>
+              
+              <Box
+                bg="rgba(255,255,255,0.15)"
+                borderRadius="$full"
+                p="$3"
+                borderWidth={1}
+                borderColor="rgba(255,255,255,0.2)"
+              >
+                <Ionicons name={currentCard.icon as keyof typeof Ionicons.glyphMap} size={28} color="white" />
+              </Box>
+            </HStack>
+            
+            <HStack space="md" mt="$2">
+              {currentCard.actions.map((action, index) => {
+                const buttonStyle = getButtonStyles(action.type);
+                return (
+                  <Button
+                    key={index}
+                    variant={action.type === 'secondary' ? 'outline' : 'solid'}
+                    size="sm"
+                    bg={buttonStyle.bg}
+                    borderColor={action.type === 'secondary' ? 'rgba(255,255,255,0.3)' : undefined}
+                    borderRadius="$full"
+                    flex={1}
+                    $pressed={{
+                      bg: action.type === 'secondary' ? 'rgba(255,255,255,0.1)' : 'rgba(255,255,255,0.9)',
+                      transform: [{ scale: 0.98 }],
+                    }}
+                  >
+                    <HStack space="xs" alignItems="center">
+                      <Ionicons 
+                        name={action.icon as keyof typeof Ionicons.glyphMap} 
+                        size={16} 
+                        color={action.type === 'secondary' ? 'white' : buttonStyle.textColor} 
+                      />
+                      <ButtonText 
+                        color={action.type === 'secondary' ? 'white' : buttonStyle.textColor} 
+                        fontWeight="$bold"
+                        fontSize="$sm"
+                      >
+                        {action.label}
+                      </ButtonText>
+                    </HStack>
+                  </Button>
+                );
+              })}
+            </HStack>
+          </VStack>
+          </LinearGradient>
+        </Box>
+
+        {/* Dot indicators */}
+        <HStack space="xs" justifyContent="center" mt="$3">
+          {notificationCards.map((_, index) => (
+            <Pressable
+              key={index}
+              onPress={() => setCurrentCardIndex(index)}
+              bg={index === currentCardIndex ? currentCard.gradient[0] : '$backgroundLight300'}
+              width={8}
+              height={8}
+              borderRadius="$full"
+              $pressed={{ opacity: 0.7 }}
+            />
+          ))}
+        </HStack>
+        
+        {/* Full-width touch overlay for swipe detection */}
+        <Box
+          position="absolute"
+          top={0}
+          left={0}
+          right={0}
+          bottom={0}
+          zIndex={10}
+          {...fullWidthPanResponder.panHandlers}
+        />
+      </Box>
     );
   };
 
@@ -614,103 +1162,6 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
       <SafeAreaView flex={1} bg="$appBackground" $dark={{bg: "$backgroundDark900"}}>
 
 
-        {/* Profile Dropdown Menu - Positioned relative to header */}
-        {showProfileDropdown && (
-          <Box position="relative" zIndex={1000}>
-            <Animated.View
-              style={[
-                {
-                  position: 'absolute',
-                  top: -10,
-                  right: 24,
-                },
-                dropdownAnimatedStyle,
-              ]}
-            >
-              <Box
-                bg="$backgroundLight0"
-                $dark={{bg: "$backgroundDark800"}}
-                borderRadius="$xl"
-                borderWidth="$1"
-                borderColor="$borderLight200"
-                $dark={{borderColor: "$borderDark700"}}
-                shadowColor="$shadowLight300"
-                shadowOffset={{ width: 0, height: 8 }}
-                shadowOpacity={0.25}
-                shadowRadius={16}
-                elevation={12}
-                minWidth={180}
-                overflow="hidden"
-              >
-                {/* Profile Option */}
-                <Pressable
-                  onPress={handleProfileMenuPress}
-                  $pressed={{ bg: '$backgroundLight100' }}
-                  px="$4"
-                  py="$3"
-                  borderBottomWidth="$1"
-                  borderBottomColor="$borderLight100"
-                >
-                  <HStack space="md" alignItems="center">
-                    <Ionicons name="person" size={16} color="#6B7280" />
-                    <Text
-                      fontSize="$md"
-                      fontWeight="$medium"
-                      color="$textLight900"
-                      $dark={{color: "$textDark50"}}
-                      textAlign="left"
-                    >
-                      פרופיל אישי
-                    </Text>
-                  </HStack>
-                </Pressable>
-
-                {/* Settings Option */}
-                <Pressable
-                  onPress={handleSettingsPress}
-                  $pressed={{ bg: '$backgroundLight100' }}
-                  px="$4"
-                  py="$3"
-                  borderBottomWidth="$1"
-                  borderBottomColor="$borderLight100"
-                >
-                  <HStack space="md" alignItems="center">
-                    <Ionicons name="settings" size={16} color="#6B7280" />
-                    <Text
-                      fontSize="$md"
-                      fontWeight="$medium"
-                      color="$textLight900"
-                      $dark={{color: "$textDark50"}}
-                      textAlign="left"
-                    >
-                      הגדרות
-                    </Text>
-                  </HStack>
-                </Pressable>
-
-                {/* Logout Option */}
-                <Pressable
-                  onPress={handleLogoutPress}
-                  $pressed={{ bg: '$backgroundLight100' }}
-                  px="$4"
-                  py="$3"
-                >
-                  <HStack space="md" alignItems="center">
-                    <Ionicons name="log-out" size={16} color="#EF4444" />
-                    <Text
-                      fontSize="$md"
-                      fontWeight="$medium"
-                      color="$error500"
-                      textAlign="left"
-                    >
-                      יציאה
-                    </Text>
-                  </HStack>
-                </Pressable>
-              </Box>
-            </Animated.View>
-          </Box>
-        )}
 
         <ScrollView
           flex={1}
@@ -748,7 +1199,8 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
                   
                   {/* Profile Button */}
                   <Pressable
-                    onPress={handleProfilePress}
+                    ref={profileButtonRef}
+                    onPress={handleProfileMenuPress}
                     bg="$backgroundLight0"
                     $dark={{bg: "$backgroundDark800"}}
                     borderRadius="$full" 
@@ -779,118 +1231,25 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
                           {currentUser.charAt(0)}
                         </Text>
                       </Box>
-                      <Box
-                        bg="$success500"
-                        borderRadius="$full"
-                        width={8}
-                        height={8}
-                        mr="$1"
-                      />
-                      <Ionicons 
-                        name="chevron-down" 
-                        size={16} 
-                        color={theme.colors.text.secondary} 
-                      />
+                      <Animated.View
+                        style={{
+                          transform: [{
+                            rotate: isDropdownVisible ? '180deg' : '0deg'
+                          }]
+                        }}
+                      >
+                        <Ionicons 
+                          name="chevron-down" 
+                          size={16} 
+                          color={theme.colors.text.secondary} 
+                        />
+                      </Animated.View>
                     </HStack>
                   </Pressable>
                 </HStack>
 
-                {/* Next Activity Hero Card - Updated with gradient */}
-                <Box
-                  borderRadius="$xl"
-                  p="$5"
-                  shadowColor="#1f2937"
-                  shadowOffset={{ width: 0, height: 8 }}
-                  shadowOpacity={0.15}
-                  shadowRadius={16}
-                  elevation={8}
-                  position="relative"
-                  overflow="hidden"
-                  style={{
-                    background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
-                  }}
-                  bg="#667eea" // Fallback for non-gradient support
-                >
-                  {/* Subtle background pattern */}
-                  <Box 
-                    position="absolute" 
-                    top={-20} 
-                    right={-20} 
-                    width={100} 
-                    height={100} 
-                    borderRadius={50} 
-                    bg="rgba(255,255,255,0.08)" 
-                  />
-                  
-                  <VStack space="md" position="relative">
-                    <HStack justifyContent="space-between" alignItems="center">
-                      <VStack space="xs" alignItems="flex-start">
-                        <Text fontSize="$sm" color="rgba(255,255,255,0.8)" fontWeight="$medium">
-                          המשחק הבא שלך
-                        </Text>
-                        <Heading size="lg" color="white" fontWeight="$bold">
-                          כדורגל • היום 18:00
-                        </Heading>
-                        <HStack space="xs" alignItems="center">
-                          <Ionicons name="location" size={16} color="rgba(255,255,255,0.8)" />
-                          <Text fontSize="$md" color="rgba(255,255,255,0.9)" fontWeight="$medium">
-                            מגרש הכוכבים
-                          </Text>
-                        </HStack>
-                      </VStack>
-                      
-                      <Box
-                        bg="rgba(255,255,255,0.15)"
-                        borderRadius="$full"
-                        p="$3"
-                        borderWidth={1}
-                        borderColor="rgba(255,255,255,0.2)"
-                      >
-                        <Ionicons name="football" size={28} color="white" />
-                      </Box>
-                    </HStack>
-                    
-                    <HStack space="md" mt="$2">
-                      <Button
-                        variant="solid"
-                        size="sm"
-                        bg="white"
-                        borderRadius="$full"
-                        flex={1}
-                        $pressed={{
-                          bg: 'rgba(255,255,255,0.9)',
-                          transform: [{ scale: 0.98 }],
-                        }}
-                      >
-                        <HStack space="xs" alignItems="center">
-                          <Ionicons name="navigate" size={16} color="#667eea" />
-                          <ButtonText color="#667eea" fontWeight="$bold">
-                            ניווט
-                          </ButtonText>
-                        </HStack>
-                      </Button>
-                      
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        borderColor="rgba(255,255,255,0.3)"
-                        borderRadius="$full"
-                        flex={1}
-                        $pressed={{
-                          bg: 'rgba(255,255,255,0.1)',
-                          transform: [{ scale: 0.98 }],
-                        }}
-                      >
-                        <HStack space="xs" alignItems="center">
-                          <Ionicons name="information-circle" size={16} color="white" />
-                          <ButtonText color="white" fontWeight="$bold">
-                            פרטים
-                          </ButtonText>
-                        </HStack>
-                      </Button>
-                    </HStack>
-                  </VStack>
-                </Box>
+                {/* Notification Carousel */}
+                <NotificationCarousel />
               </Box>
             </Animated.View>
 
@@ -1402,6 +1761,9 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
             <Box height="$20" />
           </VStack>
         </ScrollView>
+        
+        {/* Profile Dropdown */}
+        <ProfileDropdown />
       </SafeAreaView>
     </>
   );

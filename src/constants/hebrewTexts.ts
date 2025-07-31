@@ -69,7 +69,23 @@ export const texts = {
     totalCost: 'עלות כוללת',
     paymentMethod: 'אמצעי תשלום',
     bookingConfirmed: 'הזמנה אושרה',
-    bookingCancelled: 'הזמנה בוטלה'
+    bookingCancelled: 'הזמנה בוטלה',
+    // Enhanced booking screen texts
+    monthView: 'תצוגה חודשית',
+    weekView: 'תצוגה שבועית',
+    clearSelection: 'נקה בחירה',
+    activeBookings: 'הזמנות פעילות היום',
+    tomorrowBookings: 'הזמנות מחר',
+    weekBookings: 'הזמנות השבוע',
+    futureBookings: 'הזמנות עתידיות',
+    bookingHistory: 'היסטוריית הזמנות',
+    noBookingsForDate: 'אין הזמנות לתאריך זה',
+    selectAnotherDate: 'בחר תאריך אחר או הזמן מגרש חדש',
+    filter: 'סינון',
+    showMore: 'הצג עוד',
+    activeBookingsCount: 'פעילות',
+    monthlyBookingsCount: 'החודש',
+    totalSpent: 'הוצאות'
   },
   
   // Friends
