@@ -44,6 +44,7 @@ import { texts } from '@constants/hebrewTexts';
 import { searchFields, searchGames } from '@services/mockApi';
 import { Field, Game } from '@types/types';
 import { I18nManager } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const { width: screenWidth } = Dimensions.get('window');
 const CARD_WIDTH = 280;
@@ -267,10 +268,26 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
     navigation.navigate('Settings');
   };
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
     hideDropdown();
-    // Add logout logic here
-    console.log('Logout pressed');
+    
+    try {
+      // Clear user session data
+      await AsyncStorage.multiRemove([
+        'currentUser',
+        'authToken',
+        'lastAuthenticatedUser'
+      ]);
+      
+      // Navigate to Welcome screen and reset navigation stack
+      navigation.reset({
+        index: 0,
+        routes: [{ name: 'Welcome' }]
+      });
+      
+    } catch (error) {
+      console.error('Logout failed:', error);
+    }
   };
 
   // Clean up timeout on unmount
@@ -708,33 +725,19 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
         const isHorizontal = Math.abs(gestureState.dx) > Math.abs(gestureState.dy);
         const hasMinimumMovement = Math.abs(gestureState.dx) > 10; // Lower threshold
         
-        console.log('Gesture check:', { 
-          dx: gestureState.dx, 
-          dy: gestureState.dy, 
-          isHorizontal, 
-          hasMinimumMovement 
-        });
-        
         return isHorizontal && hasMinimumMovement;
       },
       
       onPanResponderGrant: (evt, gestureState) => {
-        console.log('Touch granted at:', evt.nativeEvent.locationX, evt.nativeEvent.locationY);
+        // Touch granted
       },
       
       onPanResponderMove: (evt, gestureState) => {
         // Real-time feedback during gesture
         const progress = Math.min(Math.abs(gestureState.dx) / (screenWidth * 0.25), 1);
-        console.log('Gesture progress:', progress, 'dx:', gestureState.dx);
       },
       
       onPanResponderRelease: (evt, gestureState) => {
-        console.log('Gesture released:', { 
-          dx: gestureState.dx, 
-          vx: gestureState.vx,
-          screenWidth: screenWidth 
-        });
-        
         // More sensitive thresholds for better detection
         const swipeThreshold = 50; // Fixed 50px threshold
         const velocityThreshold = 300; // Lower velocity threshold
@@ -742,30 +745,21 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
         const shouldSwipe = Math.abs(gestureState.dx) > swipeThreshold || 
                            Math.abs(gestureState.vx) > velocityThreshold;
         
-        console.log('Should swipe:', shouldSwipe);
-        
         if (shouldSwipe) {
           const isRTL = I18nManager.isRTL;
-          console.log('RTL mode:', isRTL);
           
           if (gestureState.dx > 0) {
             // Swipe right
-            console.log('Swipe right detected');
             if (isRTL) {
-              console.log('RTL: Going to previous card');
               prevCard();
             } else {
-              console.log('LTR: Going to next card');
               nextCard();
             }
           } else {
             // Swipe left
-            console.log('Swipe left detected');
             if (isRTL) {
-              console.log('RTL: Going to next card');
               nextCard();
             } else {
-              console.log('LTR: Going to previous card');
               prevCard();
             }
           }
@@ -778,15 +772,6 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
 
     return (
       <Box position="relative" width="100%" minHeight={200}>
-        {/* Debug info */}
-        {__DEV__ && (
-          <Box position="absolute" top={-30} left={0} zIndex={100} bg="rgba(255,0,0,0.3)" p="$1">
-            <Text fontSize="$xs" color="white">
-              Card {currentCardIndex + 1}/{notificationCards.length} | Screen: {screenWidth}px
-            </Text>
-          </Box>
-        )}
-        
         {/* Carousel content */}
         <Box position="relative" zIndex={2}>
           <LinearGradient
@@ -1160,9 +1145,6 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
     <>
       <ThemeStatusBar />
       <SafeAreaView flex={1} bg="$appBackground" $dark={{bg: "$backgroundDark900"}}>
-
-
-
         <ScrollView
           flex={1}
           showsVerticalScrollIndicator={false}
