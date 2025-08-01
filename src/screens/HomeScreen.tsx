@@ -565,6 +565,20 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
 
   const [currentCardIndex, setCurrentCardIndex] = useState(0);
 
+  // Animation values for notification carousel
+  const cardTranslateX = useSharedValue(0);
+  const cardScale = useSharedValue(1);
+  const cardOpacity = useSharedValue(1);
+  const cardRotateY = useSharedValue(0);
+
+  // Reset animations when component mounts or card index changes
+  useEffect(() => {
+    cardTranslateX.value = withSpring(0, { damping: 15, stiffness: 300 });
+    cardScale.value = withSpring(1, { damping: 15, stiffness: 300 });
+    cardOpacity.value = withSpring(1, { damping: 15, stiffness: 300 });
+    cardRotateY.value = withSpring(0, { damping: 15, stiffness: 300 });
+  }, [currentCardIndex]);
+
   // Enhanced sports images with better quality and relevance
   const getSportImage = (sportType: string) => {
     const sportImages: Record<string, string> = {
@@ -694,9 +708,19 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
     );
   };
 
-  // Notification Carousel Component - Simplified
+  // Notification Carousel Component - Enhanced with Animations
   const NotificationCarousel = () => {
     const currentCard = notificationCards[currentCardIndex];
+
+    // Animated styles for smooth card transitions
+    const cardAnimatedStyle = useAnimatedStyle(() => ({
+      transform: [
+        { translateX: cardTranslateX.value },
+        { scale: cardScale.value },
+        { rotateY: `${cardRotateY.value}deg` }
+      ],
+      opacity: cardOpacity.value,
+    }));
 
     const getButtonStyles = (type: string) => {
       const styles = {
@@ -710,14 +734,48 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
     };
 
     const nextCard = () => {
+      // Update card index and animate in from right
       setCurrentCardIndex((prev) => (prev + 1) % notificationCards.length);
+      
+      // Animate new card sliding in
+      cardTranslateX.value = screenWidth * 0.3;
+      cardOpacity.value = 0.6;
+      cardScale.value = 0.9;
+      cardRotateY.value = -10;
+      
+      // Spring back to center
+      cardTranslateX.value = withSpring(0, { 
+        damping: 20, 
+        stiffness: 350,
+        mass: 0.8 
+      });
+      cardOpacity.value = withSpring(1, { damping: 15, stiffness: 300 });
+      cardScale.value = withSpring(1, { damping: 15, stiffness: 300 });
+      cardRotateY.value = withSpring(0, { damping: 15, stiffness: 300 });
     };
 
     const prevCard = () => {
+      // Update card index and animate in from left
       setCurrentCardIndex((prev) => (prev - 1 + notificationCards.length) % notificationCards.length);
+      
+      // Animate new card sliding in
+      cardTranslateX.value = -screenWidth * 0.3;
+      cardOpacity.value = 0.6;
+      cardScale.value = 0.9;
+      cardRotateY.value = 10;
+      
+      // Spring back to center
+      cardTranslateX.value = withSpring(0, { 
+        damping: 20, 
+        stiffness: 350,
+        mass: 0.8 
+      });
+      cardOpacity.value = withSpring(1, { damping: 15, stiffness: 300 });
+      cardScale.value = withSpring(1, { damping: 15, stiffness: 300 });
+      cardRotateY.value = withSpring(0, { damping: 15, stiffness: 300 });
     };
 
-    // Enhanced full-width touch detection system
+    // Enhanced full-width touch detection system with smooth animations
     const fullWidthPanResponder = PanResponder.create({
       onStartShouldSetPanResponder: () => true,
       onMoveShouldSetPanResponder: (evt, gestureState) => {
@@ -729,12 +787,22 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
       },
       
       onPanResponderGrant: (evt, gestureState) => {
-        // Touch granted
+        // Touch granted - prepare for interaction
+        cardScale.value = withSpring(0.98, { damping: 15, stiffness: 300 });
       },
       
       onPanResponderMove: (evt, gestureState) => {
         // Real-time feedback during gesture
         const progress = Math.min(Math.abs(gestureState.dx) / (screenWidth * 0.25), 1);
+        const resistance = 0.6; // Resistance factor for smoother feel
+        
+        // Apply real-time translation with resistance
+        cardTranslateX.value = gestureState.dx * resistance;
+        
+        // Visual feedback based on swipe progress
+        cardScale.value = 0.98 + (progress * 0.02); // Slight scale increase
+        cardOpacity.value = 1 - (progress * 0.15); // Subtle opacity decrease
+        cardRotateY.value = (gestureState.dx / screenWidth) * 8; // Subtle 3D rotation
       },
       
       onPanResponderRelease: (evt, gestureState) => {
@@ -748,21 +816,52 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
         if (shouldSwipe) {
           const isRTL = I18nManager.isRTL;
           
-          if (gestureState.dx > 0) {
-            // Swipe right
-            if (isRTL) {
-              prevCard();
-            } else {
-              nextCard();
-            }
-          } else {
-            // Swipe left
-            if (isRTL) {
-              nextCard();
-            } else {
-              prevCard();
-            }
+          // Determine swipe direction
+          let isSwipeRight = gestureState.dx > 0;
+          if (isRTL) {
+            isSwipeRight = !isSwipeRight; // Invert for RTL
           }
+          
+          if (isSwipeRight) {
+            // Animate card sliding out to the right, then switch
+            cardTranslateX.value = withTiming(screenWidth * 0.8, { duration: 300 }, (finished) => {
+              if (finished) {
+                runOnJS(nextCard)();
+              }
+            });
+            cardOpacity.value = withTiming(0.3, { duration: 300 });
+            cardScale.value = withTiming(0.85, { duration: 300 });
+            cardRotateY.value = withTiming(15, { duration: 300 });
+          } else {
+            // Animate card sliding out to the left, then switch
+            cardTranslateX.value = withTiming(-screenWidth * 0.8, { duration: 300 }, (finished) => {
+              if (finished) {
+                runOnJS(prevCard)();
+              }
+            });
+            cardOpacity.value = withTiming(0.3, { duration: 300 });
+            cardScale.value = withTiming(0.85, { duration: 300 });
+            cardRotateY.value = withTiming(-15, { duration: 300 });
+          }
+        } else {
+          // Snap back with smooth spring animation
+          cardTranslateX.value = withSpring(0, { 
+            damping: 20, 
+            stiffness: 400,
+            mass: 0.8 
+          });
+          cardOpacity.value = withSpring(1, { 
+            damping: 15, 
+            stiffness: 300 
+          });
+          cardScale.value = withSpring(1, { 
+            damping: 15, 
+            stiffness: 300 
+          });
+          cardRotateY.value = withSpring(0, { 
+            damping: 15, 
+            stiffness: 300 
+          });
         }
       },
       
@@ -773,7 +872,7 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
     return (
       <Box position="relative" width="100%" minHeight={200}>
         {/* Carousel content */}
-        <Box position="relative" zIndex={2}>
+        <Animated.View style={[cardAnimatedStyle, { position: 'relative', zIndex: 2 }]}>
           <LinearGradient
             colors={currentCard.gradient}
             start={{ x: 0, y: 0 }}
@@ -860,7 +959,7 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
             </HStack>
           </VStack>
           </LinearGradient>
-        </Box>
+        </Animated.View>
 
         {/* Dot indicators */}
         <HStack space="xs" justifyContent="center" mt="$3">
